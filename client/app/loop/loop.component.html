@@ -1,0 +1,71 @@
+<app-loading [condition]="isLoading"></app-loading>
+
+<app-toast [message]="toast.message"></app-toast>
+
+<div class="card" *ngIf="!isLoading">
+  <h4 class="card-header">Current loops ({{loops.length}})</h4>
+  <div class="card-block">
+    <table class="table table-bordered table-striped">
+      <thead class="thead-default">
+      <tr>
+        <th>nome</th>
+        <th>Delay Main</th>
+        <th>Delay Extra</th>
+        <th>Actions</th>
+      </tr>
+      </thead>
+      <tbody *ngIf="loops.length === 0">
+      <tr>
+        <td colspan="4">There are no loops in the DB. Add a new loop below.</td>
+      </tr>
+      </tbody>
+      <tbody *ngIf="!isEditing">
+      <tr *ngFor="let loop of loops">
+        <td>{{loop.nome}}</td>
+        <td>{{loop.delay_main}}</td>
+        <td>{{loop.delay_extra}}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" (click)="enableEditing(loop)"><i class="fa fa-pencil"></i> Edit</button> <button class="btn btn-sm btn-danger" (click)="deleteLoop(loop)"><i class="fa fa-trash"></i> Delete</button>
+        </td>
+      </tr>
+      </tbody>
+      <tbody *ngIf="isEditing">
+      <tr>
+        <td colspan="4">
+          <form class="form-inline" #form="ngForm" (ngSubmit)="editLoop(loop)" style="display:inline">
+            <div class="form-group">
+              <input class="form-control" type="text" name="nome" [(ngModel)]="loop.nome" placeholder="Nome" required>
+            </div>
+            <div class="form-group">
+              <input class="form-control" type="number" name="delay_main" [(ngModel)]="loop.delay_main" placeholder="Delay Main" min="0" required>
+            </div>
+            <div class="form-group">
+              <input class="form-control" type="number" name="delay_extra" [(ngModel)]="loop.delay_extra" placeholder="Delay Extra" step="any" min="0" required>
+            </div>
+            <button class="btn btn-sm btn-primary" type="submit" [disabled]="!form.form.valid"><i class="fa fa-floppy-o"></i> Save</button>
+          </form>
+          <button class="btn btn-sm btn-warning" (click)="cancelEditing()"><i class="fa fa-times"></i> Cancel</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card" *ngIf="!isEditing">
+  <h4 class="card-header">Add new loop</h4>
+  <div class="card-block">
+    <form class="form-inline" [formGroup]="addLoopForm" (ngSubmit)="addLoop()" style="text-align:center">
+      <div class="form-group">
+        <input class="form-control" type="text" name="nome" formControlName="nome" placeholder="Nome">
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="number" name="delay_main" formControlName="delay_main" placeholder="Delay Main" min="0">
+      </div>
+      <div class="form-group">
+        <input class="form-control" type="number" name="delay_extra" formControlName="delay_extra" placeholder="Delay Extra" step="any" min="0">
+      </div>
+      <button class="btn btn-primary" type="submit" [disabled]="!addLoopForm.valid"><i class="fa fa-floppy-o"></i> Add</button>
+    </form>
+  </div>
+</div>
