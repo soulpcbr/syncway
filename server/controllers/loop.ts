@@ -11,4 +11,10 @@ export default class LoopCtrl extends BaseCtrl<Loop> {
       return 'loop';
    }
 
+   getCollectionOption() {
+      return {
+         disableChangesApi: false
+      };
+   }
+
 }

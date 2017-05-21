@@ -1,5 +1,6 @@
 import * as Loki from 'lokijs';
 import {isNullOrUndefined} from 'util';
+import * as chokidar from 'chokidar';
 
 /**
  * Created by icastilho on 20/05/17.
@@ -14,6 +15,7 @@ abstract class BaseCtrl<T> {
    model: T;
    private db: Loki;
    protected coll: Loki.Collection;
+   private watcher;
 
    constructor() {
       this.db = new Loki(`${DB_PATH}/${this.getName()}${DB_NAME}`, {
@@ -110,11 +112,28 @@ abstract class BaseCtrl<T> {
 
    private loadHandler() {
      // if database did not exist it will be empty so I will intitialize here
+      this.loadCollection(() => {});
+
+      this.watcher = chokidar.watch(`${DB_PATH}/${this.getName()}${DB_NAME}`, {ignored: /(^|[\/\\])\../, interval: 1})
+      this.watcher.on('change', path => {
+         console.log(`File ${path} has been changed`);
+         this.db.loadDatabase({}, () => {
+            console.log('reload: ', this.getName());
+            this.coll =  this.db.getCollection(this.getName());
+         });
+         this.watcher.unwatch(`${DB_PATH}/${this.getName()}${DB_NAME}`);
+         this.watcher.add(`${DB_PATH}/${this.getName()}${DB_NAME}`);
+      });
+
+   }
+
+   private loadCollection(callback) { console.log('LoadCollection:', this.getName())
       this.coll = this.db.getCollection(this.getName());
       if (this.coll === null) {
-         this.coll = this.db.addCollection(this.getName());
+         this.coll = this.db.addCollection(this.getName(), this.getCollectionOption());
       }
       this.coll.on('error', (err) => console.error('Error Load Coll: ',  this.getName(), err));
+      callback();
    }
 
    /**
@@ -123,6 +142,10 @@ abstract class BaseCtrl<T> {
     */
    beforSave(data: T): Promise<any> {
       return Promise.resolve(data);
+   }
+
+   getCollectionOption() {
+      return {};
    }
 
    abstract getName(): string;
