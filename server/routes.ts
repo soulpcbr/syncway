@@ -1,13 +1,13 @@
 
 import UserCtrl from './controllers/user';
 import LoopCtrl from './controllers/loop';
-import {LoopService} from "./service/loop.service";
-import {UserService} from "./service/user.service";
+import LoopService from './service/loop.service';
+import UserService from './service/user.service';
 
 export default function setRoutes(app) {
 
-  const loopCtrl = new LoopCtrl(LoopService);
-  const userCtrl = new UserCtrl(UserService);
+  const loopCtrl = new LoopCtrl(LoopService());
+  const userCtrl = new UserCtrl(UserService());
 
   // Cats
   app.route('/api/loops').get(loopCtrl.getAll);

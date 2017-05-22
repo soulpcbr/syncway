@@ -4,7 +4,7 @@
 The frontend is generated with [Angular CLI](https://github.com/angular/angular-cli). The backend is made from scratch. Whole stack in [TypeScript](https://www.typescriptlang.org).
 
 This project uses the stack:
-* [**L**loki.js](http://lokijs.org): Javascripr file database
+* [**L**oki.js](http://lokijs.org): Javascripr file database
 * [**E**xpress.js](http://expressjs.com): backend framework
 * [**A**ngular 4](https://angular.io): frontend framework
 * [**N**ode.js](https://nodejs.org): runtime environment

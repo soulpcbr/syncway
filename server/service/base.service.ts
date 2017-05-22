@@ -1,6 +1,6 @@
 import * as Loki from 'lokijs';
 import * as chokidar from 'chokidar';
-import {setTimeout} from "timers";
+import {EventEmitter} from 'events';
 /**
  * Created by icastilho on 22/05/17.
  */
@@ -9,10 +9,13 @@ const DB_NAME = '.db.json';
 const DB_PATH = 'data';
 abstract class BaseService<T extends Model> {
 
+   private instance;
+
    model: T;
    private db: Loki;
    protected coll: Loki.Collection;
    private watcher;
+   private emitter;
 
    constructor() {
       this.db = new Loki(`${DB_PATH}/${this.getName()}${DB_NAME}`, {
@@ -21,9 +24,10 @@ abstract class BaseService<T extends Model> {
          autoload: true,
          autoloadCallback : () => this.loadHandler()
       });
-
+      this.emitter = new EventEmitter();
       console.log(':: Init DB ', this.getName() + DB_NAME);
    }
+
 
    /**
     * Insert
@@ -39,6 +43,7 @@ abstract class BaseService<T extends Model> {
             this.db.saveDatabase();
             resolve(this.model);
             this.addWatch();
+            this.emitter.emit(`${this.getName()}:insert`, this.model);
          });
       });
    }
@@ -87,11 +92,13 @@ abstract class BaseService<T extends Model> {
 
    // Delete by id
    delete = (doc): Promise<boolean> => {
+      const id = doc.$loki;
       this.stopwatch();
+      console.log(`Deleting Col ${this.getName()} - id: ${id}`);
       this.coll.remove(doc);
       this.db.saveDatabase();
-      console.log(`Deleted Col ${this.getName()} - id: ${doc.id}`);
       this.addWatch();
+      this.emitter.emit(`${this.getName()}:delete`, id);
       return Promise.resolve(true);
    }
 
@@ -124,6 +131,7 @@ abstract class BaseService<T extends Model> {
          this.coll = this.db.addCollection(this.getName(), this.getCollectionOption());
       }
       this.coll.on('error', (err) => console.error('Error Load Coll: ',  this.getName(), err));
+      this.coll.on('insert', (value) => console.log('Inset Coll: ',  this.getName(), value));
       callback();
    }
 
@@ -139,7 +147,24 @@ abstract class BaseService<T extends Model> {
       return {};
    }
 
+   /**
+    * Add listener to service event
+    * @param name
+    * @param callback
+    */
+   addListener(name: string, callback) {
+      this.emitter.on(name, callback);
+   }
+
    abstract getName(): string;
 }
 
 export default BaseService;
+
+export function service<S>(s: {new(): S; }) {
+   let service: S;
+   if (!service) {
+      service = new s();
+   }
+   return service;
+}

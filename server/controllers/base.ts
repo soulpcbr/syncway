@@ -10,8 +10,8 @@ abstract class BaseCtrl<S extends BaseService<T>, T> {
 
    service: S;
 
-   constructor(s: {new(): S; }) {
-      this.service = new s();
+   constructor(s: S) {
+      this.service = s;
    }
 
    /**
@@ -80,8 +80,16 @@ abstract class BaseCtrl<S extends BaseService<T>, T> {
          res.sendStatus(400);
          return;
       }
-      const doc = this.service.get(req.params.id);
-      this.service.delete(doc).then((value) =>  res.sendStatus(value));
+      this.service.get(req.params.id).then((doc) => {
+         this.service.delete(doc).then((value) => {
+            if (value) {
+               res.sendStatus(200);
+            } else {
+               res.sendStatus(400);
+            }
+         });
+      });
+
    }
 }
 

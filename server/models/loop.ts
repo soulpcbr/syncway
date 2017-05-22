@@ -5,6 +5,11 @@
 
 
 class Loop extends  Model {
+
+   /**
+    * Loki DB sequency number
+    */
+   $loki: number;
    /**
     * Nome do registro
     */

@@ -1,6 +1,6 @@
-import BaseService from './base.service';
 import * as bcrypt from 'bcryptjs';
 import User from '../models/user';
+import BaseService from './base.service';
 /**
  * Created by icastilho on 22/05/17.
  */
@@ -36,3 +36,13 @@ export class UserService extends BaseService<User> {
       });
    };
 }
+
+
+let service: UserService;
+export default function userService() {
+   if (!service) {
+      service = new UserService();
+   }
+   return service;
+}
+

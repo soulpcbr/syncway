@@ -94,7 +94,7 @@ export class LoopComponent implements OnInit {
       if (window.confirm('Are you sure you want to permanently delete this item?')) {
          this.loopService.deleteLoop(loop).subscribe(
             res => {
-               const pos = this.loops.map(elem => { return elem._id; }).indexOf(loop._id);
+               const pos = this.loops.map(elem => { return elem.$loki; }).indexOf(loop.$loki);
                this.loops.splice(pos, 1);
                this.toast.setMessage('item deleted successfully.', 'success');
             },
