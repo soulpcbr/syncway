@@ -4,7 +4,7 @@
 
 
 
-class Loop {
+class Loop extends  Model {
    /**
     * Nome do registro
     */

@@ -1,31 +1,17 @@
-import * as Loki from 'lokijs';
 import {isNullOrUndefined} from 'util';
-import * as chokidar from 'chokidar';
+import BaseService from '../service/base.service';
 
 /**
  * Created by icastilho on 20/05/17.
  */
 
 
-const DB_NAME = '.db.json';
-const DB_PATH = 'data';
+abstract class BaseCtrl<S extends BaseService<T>, T> {
 
-abstract class BaseCtrl<T> {
+   service: S;
 
-   model: T;
-   private db: Loki;
-   protected coll: Loki.Collection;
-   private watcher;
-
-   constructor() {
-      this.db = new Loki(`${DB_PATH}/${this.getName()}${DB_NAME}`, {
-         verbose: true,
-         persistenceMethod: 'fs',
-         autoload: true,
-         autoloadCallback : () => this.loadHandler()
-      });
-
-      console.log(':: Init DB ', this.getName() + DB_NAME);
+   constructor(s: {new(): S; }) {
+      this.service = new s();
    }
 
    /**
@@ -34,20 +20,18 @@ abstract class BaseCtrl<T> {
     * @param res
     */
    insert = (req, res) => {
-      console.log('Insert: ', this.getName());
+      console.log('Insert: ', this.service.getName());
       if (!req.body) {
          res.sendStatus(400);
          return;
       }
 
-      this.beforSave(req.body).then((data) => {
-         this.model = this.coll.insertOne(data);
-         this.db.saveDatabase();
-         if (isNullOrUndefined(this.model)) {
+      this.service.insert(req.body).then((value) => {
+         if (isNullOrUndefined(value)) {
             res.sendStatus(400);
             return;
          }
-         res.status(200).json(this.model);
+         res.status(200).json(value);
       });
    }
 
@@ -57,7 +41,7 @@ abstract class BaseCtrl<T> {
     * @param res
     */
    getAll = (req, res) => {
-      res.json(this.coll.data);
+      this.service.getAll().then(obj => res.json(obj));
    }
 
    /**
@@ -66,14 +50,9 @@ abstract class BaseCtrl<T> {
     * @param res
     */
    get = (req, res) => {
-      res.json(this.coll.get(req.params.id));
+      this.service.get(req.params.id).then(obj => res.json(obj));
    }
 
-
-   protected findOne = (param): Promise<T> => {
-      const data = <T>this.coll.findOne(param);
-      return Promise.resolve(data);
-   }
 
    /**
     * Count all
@@ -81,75 +60,29 @@ abstract class BaseCtrl<T> {
     * @param res
     */
    count = (req, res) => {
-      res.json(this.coll.data.length);
+      this.service.count().then(length => res.json(length));
    }
 
    // Update by id
    update = (req, res) => {
-      console.log(`Update: ${this.getName()} - ${req.body.$loki}`);
+      console.log(`Update: ${this.service.getName()} - ${req.body.$loki}`);
       if (!req.body || !req.body.$loki) {
          res.sendStatus(400);
          return;
       }
-      this.coll.update(req.body);
-      this.db.saveDatabase();
-      res.status(200).json(this.model);
+      this.service.update(req.body).then((obj) => res.status(200).json(obj));
    }
 
    // Delete by id
    delete = (req, res) => {
-      console.log(`Delete ${this.getName()} id: ${req.params.id}` );
+      console.log(`Delete ${this.service.getName()} id: ${req.params.id}` );
       if (!req.params.id) {
          res.sendStatus(400);
          return;
       }
-      const doc = this.coll.get(req.params.id);
-      this.coll.remove(doc);
-      this.db.saveDatabase();
-      console.log(`Deleted Col ${this.getName()} - id: ${req.body}`);
-      res.sendStatus(200);
+      const doc = this.service.get(req.params.id);
+      this.service.delete(doc).then((value) =>  res.sendStatus(value));
    }
-
-   private loadHandler() {
-     // if database did not exist it will be empty so I will intitialize here
-      this.loadCollection(() => {});
-
-      this.watcher = chokidar.watch(`${DB_PATH}/${this.getName()}${DB_NAME}`, {ignored: /(^|[\/\\])\../, interval: 1})
-      this.watcher.on('change', path => {
-         console.log(`File ${path} has been changed`);
-         this.db.loadDatabase({}, () => {
-            console.log('reload: ', this.getName());
-            this.coll =  this.db.getCollection(this.getName());
-         });
-         this.watcher.unwatch(`${DB_PATH}/${this.getName()}${DB_NAME}`);
-         this.watcher.add(`${DB_PATH}/${this.getName()}${DB_NAME}`);
-      });
-
-   }
-
-   private loadCollection(callback) { console.log('LoadCollection:', this.getName())
-      this.coll = this.db.getCollection(this.getName());
-      if (this.coll === null) {
-         this.coll = this.db.addCollection(this.getName(), this.getCollectionOption());
-      }
-      this.coll.on('error', (err) => console.error('Error Load Coll: ',  this.getName(), err));
-      callback();
-   }
-
-   /**
-    * Function to execute before save
-    * @returns {Promise<boolean>}
-    */
-   beforSave(data: T): Promise<any> {
-      return Promise.resolve(data);
-   }
-
-   getCollectionOption() {
-      return {};
-   }
-
-   abstract getName(): string;
-
 }
 
 export default BaseCtrl;
