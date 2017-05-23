@@ -16,14 +16,14 @@ export class Task {
    }
 
    async run() {
-      console.log(`${this.status} ... TASK: ${this.name} Delay: ${this.delay}` );
+      console.log(`[TASK] ${this.name} :: ${this.status} ... Delay: ${this.delay}` );
 
       setTimeout(async () => {
          if (this.status === 'DELETED') {
             return;
          } else if (this.status === 'SLEEPING') {
-            this.status = 'RUNNING';
-            console.log(`${this.status} ... TASK: ${this.name} Delay: ${this.delay}`);
+            this.status = 'WAKING-UP';
+            console.log(`[TASK] ${this.name} :: ${this.status}`);
             await this.execution();
             this.status = 'SLEEPING';
             this.run();

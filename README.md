@@ -17,8 +17,12 @@ Other tools and technologies used:
 * [Angular 2 JWT](https://github.com/auth0/angular2-jwt): JWT helper for Angular
 * [Bcrypt.js](https://github.com/dcodeIO/bcrypt.js): password encryption
 
+## DataBase
+* It is using a Loki DB which save data to files inside directory data
+* This files can be external edited then application will automatically reload DataBase 
+
 ## Prerequisites
-1. Install [Node.js](https://nodejs.org)
+1. Install [Node.js](https://nodejs.org) ^7.9.0 
 2. Install Angular CLI: `npm i -g @angular/cli`
 3. From project root folder install all the dependencies: `npm i`
 
