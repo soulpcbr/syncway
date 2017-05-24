@@ -2,6 +2,7 @@ import { createReadStream } from 'fs';
 import Loop from '../models/loop';
 const fetch = require('node-fetch');
 const FormData = require('form-data');
+const populate = require('form-data/lib/populate');
 const request = require('request');
 const parseUrl = require('url').parse;
 
@@ -21,29 +22,47 @@ export class SyncwayFileUpload {
       } else {
          form.append('fileToUpload',  createReadStream(loop.arquivo));
       }
-      form.append('submit',  'submit');
-
+      if (loop.data) {
+         const obj = JSON.parse(loop.data);
+         const keys = Object.keys(obj);
+         await keys.forEach((key, index, array) => {
+            form.append(key, obj[key]);
+         });
+      }
       const params = parseUrl(loop.api);
-     return new Promise((resolve, reject) => {
+
+      return await new Promise((resolve, reject) => {
          form.submit({
             port: params.port,
             path: params.pathname,
             host: params.hostname,
-            method: loop.method.toLowerCase()
+            method: loop.method.toLowerCase(),
          }, function(err, res) {
             if (err) {
                reject(err);
             }
-            console.log(res.headers['content-type'])
+
+/*            if (!/^application\/json/.test(res.headers['content-type'])) {
+               reject(new Error(`Invalid content-type.\n` +
+                  `Expected application/json but received ${res.headers['content-type']}`));
+            }*/
+
+            let rawData = '';
             res.on('data', (chunk) => {
-               console.log(`BODY: ${chunk}`);
-               resolve(loop.delay_main + 1000);
+               rawData += chunk;
+            });
+            res.on('end', () => {
+               try {
+                  const parsedData = JSON.parse(rawData);
+                  resolve(parsedData.delay);
+               } catch (e) {
+                  console.error(e.message);
+                  reject();
+               }
             });
          });
       });
-
    }
-
 }
 
 

@@ -1,3 +1,4 @@
+import Loop from '../models/loop';
 /**
  * Created by icastilho on 22/05/17.
  */
@@ -9,14 +10,18 @@ export class Task {
    delay: number;
    execution: any;
    status = 'SLEEPING';
+   loop: Loop;
+   delayType: string;
 
-   constructor(name: string, delay: number) {
-      this.name = name;
-      this.delay = delay;
+   constructor(loop: Loop) {
+      this.name = loop.nome;
+      this.delay = loop.delay_main;
+      this.loop = loop;
+      this.delayType = 'main';
    }
 
    async run() {
-      console.log(`[TASK] ${this.name} :: ${this.status} ... Delay: ${this.delay}` );
+      console.log(`[TASK] ${this.name} :: ${this.status} ... Delay: ${this.getDelay()}` );
 
       setTimeout(async () => {
          if (this.status === 'DELETED') {
@@ -30,7 +35,15 @@ export class Task {
          } else {
             this.run();
          }
-      }, this.delay);
+      }, this.getDelay());
+   }
+
+   setDelay(delay) {
+      this.delay = delay;
+   }
+
+   getDelay() {
+      return this.delay;
    }
 
    setExecution(execution: any) {

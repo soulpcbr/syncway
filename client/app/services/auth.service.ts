@@ -3,11 +3,13 @@ import { Router } from '@angular/router';
 import { JwtHelper } from 'angular2-jwt';
 
 import { UserService } from '../services/user.service';
+import { environment } from 'environments/environment';
 
 @Injectable()
 export class AuthService {
   loggedIn = false;
   isAdmin = false;
+  isProduction = environment.production;
 
   jwtHelper: JwtHelper = new JwtHelper();
 

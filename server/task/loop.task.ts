@@ -2,7 +2,6 @@ import async from 'async';
 import {Task} from './task';
 import Loop from '../models/loop';
 import loopInstance, {LoopService} from '../service/loop.service';
-import {EventEmitter} from 'events';
 import {SyncwayFileUpload} from '../service/fileupload.service';
 const fs = require('fs');
 
@@ -20,7 +19,6 @@ function push(task: Task) {
 export class TaskLoop {
 
    loopService: LoopService;
-   emitter: EventEmitter;
 
 
    constructor() {
@@ -35,7 +33,10 @@ export class TaskLoop {
 
          async.each(loops, (loop, callback) => {
             // Perform operation on file here.
-            this.execution(loop);
+            const task = new Task(loop);
+            this.execution(task);
+            tasks.push(task);
+            task.run();
             callback();
          }, function(err) {
             // if any of the file processing produced an error, err would equal that error
@@ -51,53 +52,59 @@ export class TaskLoop {
       });
    }
 
-   execution(loop: Loop) {
-      console.log('[TASK] Creating Loop :: ' + loop.nome);
-      const task = new Task(loop.nome, loop.delay_extra);
-      task.setExecution(() => {
-         this.loopService.get(loop.$loki).then((obj) => {
+   execution(task: Task) {
+      console.log('[TASK] Creating Loop :: ' + task.loop.nome);
+
+      task.setExecution(async () => {
+        await this.loopService.get(task.loop.$loki).then(async (obj) => {
             // console.log(task, ' time: ' + new Date().getTime());
             if (!obj) {
-               console.log(`[TASK] ${loop.nome}:: DELETED`);
+               console.log(`[TASK] ${task.loop.nome}:: DELETED`);
                task.status = 'DELETED';
                return;
             }
-            task.delay = obj.delay_main ?  obj.delay_main : obj.delay_extra;
+            if (task.delayType === 'extra') {
+               task.delay = obj.delay_extra;
+            } else {
+               task.delay = obj.delay_main;
+            }
             task.name = obj.nome;
-            this.process(obj);
+            task.loop = obj;
+            await this.process(task);
          });
       });
-      task.run();
-      tasks.push(task);
    }
 
 
-   async process(loop: Loop) {
+   async process(task: Task) {
 
-      if (loop.arquivo.match('^https?://')) {
-         console.log(`[PROCESS HTTP] ${loop.nome} :: It is http origin: ${loop.arquivo}`);
-         this.sendFile(loop).then((delay) => console.log(`[PROCESS HTTP] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
+      if (task.loop.arquivo.match('^https?://')) {
+         console.log(`[PROCESS HTTP] ${task.loop.nome} :: It is http origin: ${task.loop.arquivo}`);
+         await  this.sendFile(task, task.loop).then((delay) => console.log(`[PROCESS HTTP] ${task.loop.nome} 
+         :: FINISHED READ: ${task.loop.arquivo}`))
             .catch((err) => console.log('ERROR:: ', err));
       } else {
 
          try {
-           fs.stat(loop.arquivo, (err, stats) => {
+            await fs.stat(task.loop.arquivo, async (err, stats) => {
                if (err) {
                   throw err;
                }
                if (stats.isDirectory()) {
-                  this.readDir(loop);
+                  await this.readDir(task);
                } else if (stats.isFile()) {
-                  this.readFile(loop);
+                  await this.sendFile(task, task.loop).then((delay) => console.log(`[PROCESS FILE] ${task.loop.nome} 
+         :: FINISHED READ: ${task.loop.arquivo}`))
+                     .catch((err2) => console.log('ERROR:: ', err2));
                } else {
-                  console.warn('It is not file or directory: ', loop.arquivo);
+                  console.warn('It is not file or directory: ', task.loop.arquivo);
                }
             });
          } catch (e) {
             // Handle error
             if (e.code === 'ENOENT') {
                // no such file or directory
-               console.error(`ENOENT: ${loop.nome}: ${loop.arquivo} :: No such a file or directory`);
+               console.error(`ENOENT: ${task.loop.nome}: ${task.loop.arquivo} :: No such a file or directory`);
             } else {
                // do something else
             }
@@ -105,28 +112,30 @@ export class TaskLoop {
       }
    }
 
-   async readDir(loop) {
-      fs.readdir(loop.arquivo, (err2, files) => {
+   async readDir(task: Task) {
+      await fs.readdir(task.loop.arquivo, async (err2, files) => {
          if (err2) {
-            console.error(`[PROCESS DIR] ${loop.nome} :: ERROR READING: ${loop.arquivo}`);
+            console.error(`[PROCESS DIR] ${task.loop.nome} :: ERROR READING: ${task.loop.arquivo}`);
             throw err2;
          }
-         console.log(`[PROCESS DIR] ${loop.nome} :: READING: ${loop.arquivo} - ${files.length} files inside`);
+         console.log(`[PROCESS DIR] ${task.loop.nome} :: READING: ${task.loop.arquivo} - ${files.length} files inside`);
          if (files.length > 0) {
-            async.each(files, async (file, callback) => {
-               const lo: Loop = Object.assign({}, loop);
-               lo.arquivo = loop.arquivo + '/' + file;
+            await async.each(files, async (file, callback) => {
+               const lo: Loop = Object.assign({}, task.loop);
+               lo.arquivo = task.loop.arquivo + '/' + file;
                console.log(file);
-               this.readFile(lo).then(callback);
+               await this.sendFile(task, lo).then(callback);
             }, (errFile) => {
-               console.log(`[PROCESS DIR] ${loop.nome} :: FINISHED READ: ${loop.arquivo} ${errFile ? '- With Errors!!!'  : ''}`, errFile);
+               console.log(`[PROCESS DIR] ${task.loop.nome} 
+               :: FINISHED READ: ${task.loop.arquivo} ${errFile ? '- With Errors!!!'  : ''}`);
             });
          }
 
       });
    }
 
-   async readFile(loop) {
+/*
+   async readFile(task: Task, loop: Loop) {
       await fs.readFile(loop.arquivo, (err2, file) => {
          if (err2) {
             console.error(err2)
@@ -134,23 +143,25 @@ export class TaskLoop {
             throw err2;
          }
          console.log(`[PROCESS FILE] ${loop.nome} :: READING: ${loop.arquivo}`);
-         this.sendFile(loop).then(() => console.log(`[PROCESS FILE] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
+         this.sendFile(task, loop).then(() => console.log(`[PROCESS FILE] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
             .catch((err) => console.log('ERROR:: ', err));
 
       });
 
    }
+*/
 
-   async sendFile(loop) {
-      return SyncwayFileUpload.upload(loop).then((newDelay) => {
-         console.log(`[TASK] ${loop.nome} :: NEW DELAY => ${newDelay}`);
-         loop.delay_main = newDelay;
-         this.loopService.update(loop);
+   async sendFile(task: Task,  loop: Loop) {
+      return await SyncwayFileUpload.upload(loop).then((delayType) => {
+         console.log(`[TASK] ${loop.nome} :: NEW DELAY TYPE => ${delayType}`);
+         task.delayType = '' + delayType;
       });
    }
 
    onInsert(loop: Loop) {
-      this.execution(loop);
+      const task = new Task(loop);
+      this.execution(task);
+      tasks.push(task);
    }
 
    onDelete(id: number) {
