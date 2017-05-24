@@ -39,7 +39,8 @@ if (isset($_POST["submit"])) {
         $tipos_de_delay = array('main', 'extra');
         $delay = array_rand($tipos_de_delay);
         $data['delay'] = $tipos_de_delay[$delay];
-        if (move_uploaded_file($_FILES["fileToUpload"]["name"], $target_file)) {
+
+        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
             $data['msg'][] = "The file " . basename($_FILES["fileToUpload"]["name"]) . " has been uploaded.";
         } else {
             $data['msg'][] = "Sorry, there was an error uploading your file.";

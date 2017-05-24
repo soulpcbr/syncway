@@ -3,6 +3,7 @@ import {Task} from './task';
 import Loop from '../models/loop';
 import loopInstance, {LoopService} from '../service/loop.service';
 import {EventEmitter} from 'events';
+import {SyncwayFileUpload} from '../service/fileupload.service';
 const fs = require('fs');
 
 const tasks: Task[] = [];
@@ -43,7 +44,7 @@ export class TaskLoop {
                // All processing will now stop.
                console.log('A loop failed to process');
             } else {
-               console.log('All loop have been processed successfully');
+               // console.log('All loop have been processed successfully');
             }
          });
 
@@ -51,17 +52,17 @@ export class TaskLoop {
    }
 
    execution(loop: Loop) {
-      console.log('Creating Loop Task : ' + loop.nome);
+      console.log('[TASK] Creating Loop :: ' + loop.nome);
       const task = new Task(loop.nome, loop.delay_extra);
       task.setExecution(() => {
          this.loopService.get(loop.$loki).then((obj) => {
             // console.log(task, ' time: ' + new Date().getTime());
             if (!obj) {
-               console.log(`TASK DELETED:: ${loop.nome} `);
+               console.log(`[TASK] ${loop.nome}:: DELETED`);
                task.status = 'DELETED';
                return;
             }
-            task.delay = obj.delay_extra;
+            task.delay = obj.delay_main ?  obj.delay_main : obj.delay_extra;
             task.name = obj.nome;
             this.process(obj);
          });
@@ -74,28 +75,78 @@ export class TaskLoop {
    async process(loop: Loop) {
 
       if (loop.arquivo.match('^https?://')) {
-
+         console.log(`[PROCESS HTTP] ${loop.nome} :: It is http origin: ${loop.arquivo}`);
+         this.sendFile(loop).then((delay) => console.log(`[PROCESS HTTP] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
+            .catch((err) => console.log('ERROR:: ', err));
       } else {
 
-         fs.stat(loop.arquivo, (err, stats) => {
-            if (err) {
-               console.error(`PROCESS: ${loop.nome} Error red file: ${loop.arquivo} - ERROR: ${err}`);
+         try {
+           fs.stat(loop.arquivo, (err, stats) => {
+               if (err) {
+                  throw err;
+               }
+               if (stats.isDirectory()) {
+                  this.readDir(loop);
+               } else if (stats.isFile()) {
+                  this.readFile(loop);
+               } else {
+                  console.warn('It is not file or directory: ', loop.arquivo);
+               }
+            });
+         } catch (e) {
+            // Handle error
+            if (e.code === 'ENOENT') {
+               // no such file or directory
+               console.error(`ENOENT: ${loop.nome}: ${loop.arquivo} :: No such a file or directory`);
             } else {
-               console.error(`PROCESS: ${loop.nome} READING file: ${loop.arquivo} - Status: ${stats}`);
-
-               fs.readFile(loop.arquivo, (err2, data) => {
-                  if (err2) {
-                     throw err2;
-                  }
-                  console.error(`PROCESS: ${loop.nome} FINISHED READ file: ${loop.arquivo}`);
-               });
+               // do something else
             }
-         });
+         }
       }
    }
 
-   async requestFile() {
+   async readDir(loop) {
+      fs.readdir(loop.arquivo, (err2, files) => {
+         if (err2) {
+            console.error(`[PROCESS DIR] ${loop.nome} :: ERROR READING: ${loop.arquivo}`);
+            throw err2;
+         }
+         console.log(`[PROCESS DIR] ${loop.nome} :: READING: ${loop.arquivo} - ${files.length} files inside`);
+         if (files.length > 0) {
+            async.each(files, async (file, callback) => {
+               const lo: Loop = Object.assign({}, loop);
+               lo.arquivo = loop.arquivo + '/' + file;
+               console.log(file);
+               this.readFile(lo).then(callback);
+            }, (errFile) => {
+               console.log(`[PROCESS DIR] ${loop.nome} :: FINISHED READ: ${loop.arquivo} ${errFile ? '- With Errors!!!'  : ''}`, errFile);
+            });
+         }
 
+      });
+   }
+
+   async readFile(loop) {
+      await fs.readFile(loop.arquivo, (err2, file) => {
+         if (err2) {
+            console.error(err2)
+            console.error(`[PROCESS FILE] ${loop.nome} :: ERROR READING: ${loop.arquivo}`);
+            throw err2;
+         }
+         console.log(`[PROCESS FILE] ${loop.nome} :: READING: ${loop.arquivo}`);
+         this.sendFile(loop).then(() => console.log(`[PROCESS FILE] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
+            .catch((err) => console.log('ERROR:: ', err));
+
+      });
+
+   }
+
+   async sendFile(loop) {
+      return SyncwayFileUpload.upload(loop).then((newDelay) => {
+         console.log(`[TASK] ${loop.nome} :: NEW DELAY => ${newDelay}`);
+         loop.delay_main = newDelay;
+         this.loopService.update(loop);
+      });
    }
 
    onInsert(loop: Loop) {
@@ -108,4 +159,3 @@ export class TaskLoop {
    }
 
 }
-
