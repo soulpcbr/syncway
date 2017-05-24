@@ -12,37 +12,37 @@ if (isset($_POST["submit"])) {
 
     // Check if file already exists
     if (file_exists($target_file)) {
-        echo "Sorry, file already exists.";
+        $data['msg'][] = "Sorry, file already exists.";
         $data['status'] = 0;
     } else {
         $data['status'] = 1;
     }
     // Check file size
-    if ($_FILES["fileToUpload"]["size"] > 500000) {
-        echo "Sorry, your file is too large.";
+    if ($_FILES["fileToUpload"]["size"] > 50000000) {
+        $data['msg'][] =  "Sorry, your file is too large.";
         $data['status'] = 0;
     } else {
         $data['status'] = 1;
     }
     // Allow certain file formats
-    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
-        echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+    if ($imageFileType != "txt" && $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
+        $data['msg'][] =  "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
         $data['status'] = 0;
     } else {
         $data['status'] = 1;
     }
     // Check if $uploadOk is set to 0 by an error
     if ($data['status'] == 0) {
-        $data['msg'] = "Sorry, your file was not uploaded.";
+        $data['msg'][] = "Sorry, your file was not uploaded.";
         // if everything is ok, try to upload file
     } else {
         $tipos_de_delay = array('main', 'extra');
         $delay = array_rand($tipos_de_delay);
         $data['delay'] = $tipos_de_delay[$delay];
-        if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-            $data['msg'] = "The file " . basename($_FILES["fileToUpload"]["name"]) . " has been uploaded.";
+        if (move_uploaded_file($_FILES["fileToUpload"]["name"], $target_file)) {
+            $data['msg'][] = "The file " . basename($_FILES["fileToUpload"]["name"]) . " has been uploaded.";
         } else {
-            $data['msg'] = "Sorry, there was an error uploading your file.";
+            $data['msg'][] = "Sorry, there was an error uploading your file.";
         }
     }
     echo json_encode($data);
