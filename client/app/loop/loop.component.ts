@@ -24,8 +24,6 @@ export class LoopComponent implements OnInit {
    data = new FormControl('');
    method = new FormControl('', Validators.required);
    api = new FormControl('', Validators.required);
-   usuario_id = new FormControl('', Validators.required);
-   usuario_token = new FormControl('', Validators.required);
 
    constructor(private loopService: LoopService,
                private formBuilder: FormBuilder,
@@ -41,8 +39,6 @@ export class LoopComponent implements OnInit {
          data: this.data,
          method: this.method,
          api: this.api,
-         usuario_id: this.usuario_id,
-         usuario_token: this.usuario_token,
       });
    }
 
