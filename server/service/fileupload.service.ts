@@ -46,20 +46,21 @@ export class SyncwayFileUpload {
                reject(new Error(`Invalid content-type.\n` +
                   `Expected application/json but received ${res.headers['content-type']}`));
             }*/
-
-            let rawData = '';
-            res.on('data', (chunk) => {
-               rawData += chunk;
-            });
-            res.on('end', () => {
-               try {
-                  const parsedData = JSON.parse(rawData);
-                  resolve(parsedData.delay);
-               } catch (e) {
-                  console.error(e.message);
-                  reject();
-               }
-            });
+            if (res) {
+              let rawData = '';
+              res.on('data', (chunk) => {
+                 rawData += chunk;
+              });
+              res.on('end', () => {
+                 try {
+                    const parsedData = JSON.parse(rawData);
+                    resolve(parsedData.delay);
+                 } catch (e) {
+                    console.error(e.message);
+                    reject();
+                 }
+              });
+            }
          });
       });
    }
