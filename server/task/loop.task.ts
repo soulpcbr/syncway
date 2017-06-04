@@ -57,7 +57,7 @@ export class TaskLoop {
 
       task.setExecution(async () => {
         await this.loopService.get(task.loop.$loki).then(async (obj) => {
-            // console.log(task, ' time: ' + new Date().getTime());
+            console.log(task, ' time: ' + new Date().getTime());
             if (!obj) {
                console.log(`[TASK] ${task.loop.nome}:: DELETED`);
                task.status = 'DELETED';
@@ -134,7 +134,7 @@ export class TaskLoop {
       });
    }
 
-/*
+
    async readFile(task: Task, loop: Loop) {
       await fs.readFile(loop.arquivo, (err2, file) => {
          if (err2) {
@@ -149,7 +149,7 @@ export class TaskLoop {
       });
 
    }
-*/
+
 
    async sendFile(task: Task,  loop: Loop) {
       return await SyncwayFileUpload.upload(loop).then((delayType) => {
@@ -162,6 +162,7 @@ export class TaskLoop {
       const task = new Task(loop);
       this.execution(task);
       tasks.push(task);
+      task.run();
    }
 
    onDelete(id: number) {
