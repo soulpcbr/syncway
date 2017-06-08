@@ -11,7 +11,7 @@
       <a routerLink="/login" class="nav-item nav-link" routerLinkActive="active" *ngIf="!auth.loggedIn">
         <i class="fa fa-sign-in"></i> Login
       </a>
-      <a routerLink="/register" class="nav-item nav-link" routerLinkActive="active" *ngIf="(!auth.isProduction) || (auth.loggedIn && auth.isAdmin)">
+      <a routerLink="/register" class="nav-item nav-link" routerLinkActive="active" *ngIf="(!auth.isProduction) || (auth.loggedIn && auth.isAdmin) || (isFirstExecution)">
         <i class="fa fa-user-plus"></i> Register
       </a>
       <a routerLink="/account" class="nav-item nav-link" routerLinkActive="active" *ngIf="auth.loggedIn">
