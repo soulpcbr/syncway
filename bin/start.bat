@@ -3,7 +3,7 @@ setlocal
 SET PATH=%~dp0
 set "SELF=%~dp0%uninstall.bat"
 set "CURRENT_DIR=%cd%"
-SET SERVICE_EXE=%"%\syncway-1.0.0.exe%"%
+SET SERVICE_EXE=%"%\syncway.exe%"%
 SET SERVICENAME=%"%Syncway%"%
 
 :install

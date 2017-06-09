@@ -15,7 +15,9 @@ import setTask from './tasks';
 const app = express();
 app.use(cors());
 app.set('port', (process.env.PORT || 3000));
-app.use('/', express.static(path.join(__dirname, '../public')));
+console.log('dir: ', __dirname);
+app.use('/', express.static(path.join(__dirname, 'public')));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -49,14 +51,14 @@ const logger = new winston.Logger({
 module.exports = logger;
 
 
-// create a rotating write stream
+/*// create a rotating write stream
 const accessLogStream = rfs('access.log', {
   interval: '1d', // rotate daily
   path: logDirectory
 });
 
 // setup the logger
-app.use(morgan('combined', {stream: logger.stream }));
+// app.use(morgan('combined', {stream: logger.stream }));*/
 
 dotenv.load({ path: '.env' });
 
@@ -65,7 +67,7 @@ setRoutes(app);
 setTask(app);
 
 app.get('/*', function(req, res) {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 app.listen(app.get('port'), () => {
   console.log('Angular Full Stack listening on port ' + app.get('port'));
@@ -73,7 +75,7 @@ app.listen(app.get('port'), () => {
 
 export { app };
 
-function formatArgs(args){
+function formatArgs(args) {
   return [util.format.apply(util.format, Array.prototype.slice.call(args))];
 }
 console.log = function(){

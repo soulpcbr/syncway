@@ -121,6 +121,7 @@ export class TaskLoop {
          console.log(`[PROCESS DIR] ${task.loop.nome} :: READING: ${task.loop.arquivo} - ${files.length} files inside`);
          if (files.length > 0) {
             await async.each(files, async (file, callback) => {
+              // const lo: Loop = JSON.parse(JSON.stringify(task.loop));
                const lo: Loop = Object.assign({}, task.loop);
                lo.arquivo = task.loop.arquivo + '/' + file;
                console.log(file);
