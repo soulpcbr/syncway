@@ -42,4 +42,6 @@ testem.log
 .DS_Store
 Thumbs.db
 /nbproject/private/
+/logs
+tmp
 !/.gitignore

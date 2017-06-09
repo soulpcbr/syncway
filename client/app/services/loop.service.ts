@@ -20,7 +20,7 @@ export class LoopService {
     return this.http.get('/api/loops/count').map(res => res.json());
   }
 
-  addLoop(loop): Observable<any> { console.log( JSON.stringify(loop))
+  addLoop(loop): Observable<any> {
     return this.http.post('/api/loop', JSON.stringify(loop), this.options);
   }
 

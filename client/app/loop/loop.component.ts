@@ -64,7 +64,7 @@ export class LoopComponent implements OnInit {
 
    enableEditing(loop) {
       this.isEditing = true;
-      this.loop = loop; console.log(this.loop);
+      this.loop = loop;
    }
 
    cancelEditing() {

@@ -14,9 +14,9 @@ export class AppComponent implements OnInit {
   constructor(public auth: AuthService,
               private userService: UserService) { }
 
-  ngOnInit() { console.log('ngOnInit:');
+  ngOnInit() {
     this.userService.countUsers().subscribe(
-      (value) => { console.log('value:', value);
+      (value) => {
         this.isFirstExecution = (value === 0); }
     );
   }

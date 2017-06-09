@@ -1,6 +1,7 @@
 import * as Loki from 'lokijs';
 import * as chokidar from 'chokidar';
 import {EventEmitter} from 'events';
+import * as fs from 'fs';
 /**
  * Created by icastilho on 22/05/17.
  */
@@ -18,7 +19,9 @@ abstract class BaseService<T extends Model> {
    private emitter;
 
    constructor() {
-      this.db = new Loki(`${DB_PATH}/${this.getName()}${DB_NAME}`, {
+     fs.existsSync(`${DB_PATH}`) || fs.mkdirSync(`${DB_PATH}`);
+
+     this.db = new Loki(`${DB_PATH}/${this.getName()}${DB_NAME}`, {
          verbose: true,
          persistenceMethod: 'fs',
          autoload: true,
