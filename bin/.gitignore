@@ -1,5 +1,6 @@
 # Ignore everything in this directory
 /data
 /logs
+/Syncway
 # Except this file
 !.gitignore

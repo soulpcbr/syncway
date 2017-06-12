@@ -2,10 +2,8 @@ import * as bodyParser from 'body-parser';
 import * as dotenv from 'dotenv';
 import * as express from 'express';
 import * as cors from 'cors';
-import * as morgan from 'morgan';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as rfs from 'rotating-file-stream';
 import * as winston from 'winston';
 import * as util from 'util';
 
@@ -15,9 +13,7 @@ import setTask from './tasks';
 const app = express();
 app.use(cors());
 app.set('port', (process.env.PORT || 3000));
-console.log('dir: ', __dirname);
 app.use('/', express.static(path.join(__dirname, 'public')));
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 

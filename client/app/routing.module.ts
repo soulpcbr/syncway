@@ -13,7 +13,7 @@ import { AuthGuardAdmin } from './services/auth-guard-admin.service';
 
 const routes: Routes = [
   { path: '', component: AboutComponent },
-  { path: 'loops', component: LoopComponent },
+  { path: 'loops', component: LoopComponent,  canActivate: [AuthGuardLogin] },
   { path: 'register', component: RegisterComponent },
   { path: 'login', component: LoginComponent },
   { path: 'logout', component: LogoutComponent },

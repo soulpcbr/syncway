@@ -3,7 +3,7 @@ setlocal
 set "SELF=%~dp0%install.bat"
 set "CURRENT_DIR=%cd%"
 SET PATH=%~dp0
-SET SERVICE_EXE=%"%\syncway.exe%"%
+SET SERVICE_EXE=%"%\node.exe server\app.js%"%
 SET SERVICENAME=%"%Syncway%"%
 
 :install
