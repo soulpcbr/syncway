@@ -31,13 +31,13 @@ if (isset($_POST['auth']) && !empty($_POST['auth']) && $_POST['auth'] != "testan
         } else {
             $data['status'] = 1;
 
-//            // Allow certain file formats
-//            if ($imageFileType != "txt" && $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
-//                $data['msg'][] = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-//                $data['status'] = 0;
-//            } else {
-//                $data['status'] = 1;
-//            }
+            // Allow certain file formats
+            if ($imageFileType != "txt" && $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
+                $data['msg'][] = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+                $data['status'] = 0;
+            } else {
+                $data['status'] = 1;
+            }
         }
     }
 }
