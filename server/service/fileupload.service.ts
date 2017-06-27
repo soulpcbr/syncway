@@ -18,7 +18,19 @@ export class SyncwayFileUpload {
       const form = new FormData();
 
       if (loop.arquivo.match('^https?://')) {
-         form.append('fileToUpload',  request(loop.arquivo));
+         console.log('Upload2:')
+         request(loop.arquivo, (error, response, body) => {
+            if (error) {
+               console.log('error:', error); // Print the error if one occurred
+            }
+            console.log('[GET IMAGE] statusCode:', response && response.statusCode);
+            console.log('[GET IMAGE] content-type:', response.headers['content-type'] );
+
+            form.append('fileToUpload',  body);
+         });
+
+
+         console.log('Upload3:');
       } else {
          form.append('fileToUpload',  createReadStream(loop.arquivo));
       }

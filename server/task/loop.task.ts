@@ -57,7 +57,7 @@ export class TaskLoop {
 
       task.setExecution(async () => {
         await this.loopService.get(task.loop.$loki).then(async (obj) => {
-            console.log(task, ' time: ' + new Date().getTime());
+            // console.log(task, ' time: ' + new Date().getTime());
             if (!obj) {
                console.log(`[TASK] ${task.loop.nome}:: DELETED`);
                task.status = 'DELETED';
@@ -82,19 +82,21 @@ export class TaskLoop {
          console.log(`[PROCESS HTTP] ${task.loop.nome} :: It is http origin: ${task.loop.arquivo}`);
          await  this.sendFile(task, task.loop).then((delay) => console.log(`[PROCESS HTTP] ${task.loop.nome} 
          :: FINISHED READ: ${task.loop.arquivo}`))
+            .then(() => this.deleteFile(task.loop))
             .catch((err) => console.log('ERROR:: ', err));
       } else {
 
          try {
             await fs.stat(task.loop.arquivo, async (err, stats) => {
                if (err) {
-                  throw err;
+                  console.log(`[FILE NOT FOUND] ${task.loop.nome} ::  ${task.loop.arquivo}`)
+                  return;
                }
                if (stats.isDirectory()) {
                   await this.readDir(task);
                } else if (stats.isFile()) {
                   await this.sendFile(task, task.loop).then((delay) => console.log(`[PROCESS FILE] ${task.loop.nome} 
-         :: FINISHED READ: ${task.loop.arquivo}`))
+         :: FINISHED READ: ${task.loop.arquivo}`)).then(() => this.deleteFile(task.loop))
                      .catch((err2) => console.log('ERROR:: ', err2));
                } else {
                   console.warn('It is not file or directory: ', task.loop.arquivo);
@@ -125,7 +127,9 @@ export class TaskLoop {
                const lo: Loop = Object.assign({}, task.loop);
                lo.arquivo = task.loop.arquivo + '/' + file;
                console.log(file);
-               await this.sendFile(task, lo).then(callback);
+               await this.sendFile(task, lo)
+                  .then(() => this.deleteFile(task.loop))
+                  .then(callback);
             }, (errFile) => {
                console.log(`[PROCESS DIR] ${task.loop.nome} 
                :: FINISHED READ: ${task.loop.arquivo} ${errFile ? '- With Errors!!!'  : ''}`);
@@ -144,9 +148,10 @@ export class TaskLoop {
             throw err2;
          }
          console.log(`[PROCESS FILE] ${loop.nome} :: READING: ${loop.arquivo}`);
-         this.sendFile(task, loop).then(() => console.log(`[PROCESS FILE] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
+         this.sendFile(task, loop)
+            .then(() => this.deleteFile(loop))
+            .then(() => console.log(`[PROCESS FILE2] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
             .catch((err) => console.log('ERROR:: ', err));
-
       });
 
    }
@@ -156,6 +161,21 @@ export class TaskLoop {
       return await SyncwayFileUpload.upload(loop).then((delayType) => {
          console.log(`[TASK] ${loop.nome} :: NEW DELAY TYPE => ${delayType}`);
          task.delayType = '' + delayType;
+      });
+   }
+
+   async deleteFile(loop: Loop) {
+      console.log(`[DELETING FILE] ${loop.arquivo}`);
+      return await fs.unlink(loop.arquivo, async (err) => {
+         if (err && err.code === 'ENOENT') {
+            // file doens't exist
+            console.log(`File ${loop.arquivo} doesnt exist, wont remove it.`);
+         } else if (err) {
+            // maybe we don't have enough permission
+            console.error('[DELETING FILE] Error occurred while trying to remove file:', loop.arquivo);
+         } else {
+            console.log(`[DELETING FILE] ${loop.arquivo} Sucessfully `);
+         }
       });
    }
 
