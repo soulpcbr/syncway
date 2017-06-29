@@ -7,7 +7,11 @@ if (!file_exists($target_dir)) {
 }
 
 $data = array();
-$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+if (isset($_POST['newfilename']) && !empty($_POST['newfilename'])) {
+    $target_file = $target_dir . basename($_POST['newfilename']);
+} else {
+    $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+}
 $imageFileType = pathinfo($target_file, PATHINFO_EXTENSION);
 
 //Check auth
@@ -19,25 +23,23 @@ if (isset($_POST['auth']) && !empty($_POST['auth']) && $_POST['auth'] != "testan
 
     // Check if file already exists
     if (file_exists($target_file)) {
-        $data['msg'][] = "Sorry, file already exists.";
+        unlink($target_file);
+    }
+    $data['status'] = 1;
+
+    // Check file size
+    if ($_FILES["fileToUpload"]["size"] > 50000000) {
+        $data['msg'][] = "Sorry, your file is too large.";
         $data['status'] = 0;
     } else {
         $data['status'] = 1;
 
-        // Check file size
-        if ($_FILES["fileToUpload"]["size"] > 50000000) {
-            $data['msg'][] = "Sorry, your file is too large.";
+        // Allow certain file formats
+        if ($imageFileType != "txt" && $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
+            $data['msg'][] = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
             $data['status'] = 0;
         } else {
             $data['status'] = 1;
-
-            // Allow certain file formats
-            if ($imageFileType != "txt" && $imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg" && $imageFileType != "gif") {
-                $data['msg'][] = "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-                $data['status'] = 0;
-            } else {
-                $data['status'] = 1;
-            }
         }
     }
 }

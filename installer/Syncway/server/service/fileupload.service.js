@@ -49,43 +49,55 @@ var SyncwayFileUpload = (function () {
     }
     SyncwayFileUpload.upload = function (loop) {
         return __awaiter(this, void 0, void 0, function () {
-            var form, obj_1, keys, params;
+            var form, obj_1, keys, params_1, err_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         console.log('Upload:', loop.arquivo);
                         form = new FormData();
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 5, , 6]);
                         if (loop.arquivo.match('^https?://')) {
-                            form.append('fileToUpload', request(loop.arquivo));
+                            console.log('Upload2:');
+                            request(loop.arquivo, function (error, response, body) {
+                                if (error) {
+                                    console.log('error:', error); // Print the error if one occurred
+                                }
+                                console.log('[GET IMAGE] statusCode:', response && response.statusCode);
+                                console.log('[GET IMAGE] content-type:', response.headers['content-type']);
+                                form.append('fileToUpload', body);
+                            });
+                            console.log('Upload3:');
                         }
                         else {
                             form.append('fileToUpload', fs_1.createReadStream(loop.arquivo));
                         }
-                        if (!loop.data) return [3 /*break*/, 2];
+                        if (!loop.data) return [3 /*break*/, 3];
                         obj_1 = JSON.parse(loop.data);
                         keys = Object.keys(obj_1);
                         return [4 /*yield*/, keys.forEach(function (key, index, array) {
                                 form.append(key, obj_1[key]);
                             })];
-                    case 1:
-                        _a.sent();
-                        _a.label = 2;
                     case 2:
-                        params = parseUrl(loop.api);
+                        _a.sent();
+                        _a.label = 3;
+                    case 3:
+                        params_1 = parseUrl(loop.api);
                         return [4 /*yield*/, new Promise(function (resolve, reject) {
                                 form.submit({
-                                    port: params.port,
-                                    path: params.pathname,
-                                    host: params.hostname,
+                                    port: params_1.port,
+                                    path: params_1.pathname,
+                                    host: params_1.hostname,
                                     method: loop.method.toLowerCase(),
                                 }, function (err, res) {
                                     if (err) {
                                         reject(err);
                                     }
-                                    /*            if (!/^application\/json/.test(res.headers['content-type'])) {
-                                                   reject(new Error(`Invalid content-type.\n` +
-                                                      `Expected application/json but received ${res.headers['content-type']}`));
-                                                }*/
+                                    if (!/^application\/json/.test(res.headers['content-type'])) {
+                                        reject(new Error("Invalid content-type.\n" +
+                                            ("Expected application/json but received " + res.headers['content-type'])));
+                                    }
                                     if (res) {
                                         var rawData_1 = '';
                                         res.on('data', function (chunk) {
@@ -104,7 +116,11 @@ var SyncwayFileUpload = (function () {
                                     }
                                 });
                             })];
-                    case 3: return [2 /*return*/, _a.sent()];
+                    case 4: return [2 /*return*/, _a.sent()];
+                    case 5:
+                        err_1 = _a.sent();
+                        throw err_1;
+                    case 6: return [2 /*return*/];
                 }
             });
         });

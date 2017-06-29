@@ -92,7 +92,7 @@ var TaskLoop = (function () {
                             return __generator(this, function (_a) {
                                 switch (_a.label) {
                                     case 0:
-                                        console.log(task, ' time: ' + new Date().getTime());
+                                        // console.log(task, ' time: ' + new Date().getTime());
                                         if (!obj) {
                                             console.log("[TASK] " + task.loop.nome + ":: DELETED");
                                             task.status = 'DELETED';
@@ -130,6 +130,7 @@ var TaskLoop = (function () {
                         if (!task.loop.arquivo.match('^https?://')) return [3 /*break*/, 2];
                         console.log("[PROCESS HTTP] " + task.loop.nome + " :: It is http origin: " + task.loop.arquivo);
                         return [4 /*yield*/, this.sendFile(task, task.loop).then(function (delay) { return console.log("[PROCESS HTTP] " + task.loop.nome + " \n         :: FINISHED READ: " + task.loop.arquivo); })
+                                .then(function () { return _this.deleteFile(task.loop); })
                                 .catch(function (err) { return console.log('ERROR:: ', err); })];
                     case 1:
                         _a.sent();
@@ -137,11 +138,13 @@ var TaskLoop = (function () {
                     case 2:
                         _a.trys.push([2, 4, , 5]);
                         return [4 /*yield*/, fs.stat(task.loop.arquivo, function (err, stats) { return __awaiter(_this, void 0, void 0, function () {
+                                var _this = this;
                                 return __generator(this, function (_a) {
                                     switch (_a.label) {
                                         case 0:
                                             if (err) {
-                                                throw err;
+                                                console.log("[FILE NOT FOUND] " + task.loop.nome + " ::  " + task.loop.arquivo);
+                                                return [2 /*return*/];
                                             }
                                             if (!stats.isDirectory()) return [3 /*break*/, 2];
                                             return [4 /*yield*/, this.readDir(task)];
@@ -150,7 +153,7 @@ var TaskLoop = (function () {
                                             return [3 /*break*/, 5];
                                         case 2:
                                             if (!stats.isFile()) return [3 /*break*/, 4];
-                                            return [4 /*yield*/, this.sendFile(task, task.loop).then(function (delay) { return console.log("[PROCESS FILE] " + task.loop.nome + " \n         :: FINISHED READ: " + task.loop.arquivo); })
+                                            return [4 /*yield*/, this.sendFile(task, task.loop).then(function (delay) { return console.log("[PROCESS FILE] " + task.loop.nome + " \n         :: FINISHED READ: " + task.loop.arquivo); }).then(function () { return _this.deleteFile(task.loop); })
                                                     .catch(function (err2) { return console.log('ERROR:: ', err2); })];
                                         case 3:
                                             _a.sent();
@@ -198,6 +201,7 @@ var TaskLoop = (function () {
                                         console.log("[PROCESS DIR] " + task.loop.nome + " :: READING: " + task.loop.arquivo + " - " + files.length + " files inside");
                                         if (!(files.length > 0)) return [3 /*break*/, 2];
                                         return [4 /*yield*/, async_1.default.each(files, function (file, callback) { return __awaiter(_this, void 0, void 0, function () {
+                                                var _this = this;
                                                 var lo;
                                                 return __generator(this, function (_a) {
                                                     switch (_a.label) {
@@ -205,7 +209,9 @@ var TaskLoop = (function () {
                                                             lo = Object.assign({}, task.loop);
                                                             lo.arquivo = task.loop.arquivo + '/' + file;
                                                             console.log(file);
-                                                            return [4 /*yield*/, this.sendFile(task, lo).then(callback)];
+                                                            return [4 /*yield*/, this.sendFile(task, lo)
+                                                                    .then(function () { return _this.deleteFile(task.loop); })
+                                                                    .then(callback)];
                                                         case 1:
                                                             _a.sent();
                                                             return [2 /*return*/];
@@ -240,7 +246,9 @@ var TaskLoop = (function () {
                                 throw err2;
                             }
                             console.log("[PROCESS FILE] " + loop.nome + " :: READING: " + loop.arquivo);
-                            _this.sendFile(task, loop).then(function () { return console.log("[PROCESS FILE] " + loop.nome + " :: FINISHED READ: " + loop.arquivo); })
+                            _this.sendFile(task, loop)
+                                .then(function () { return _this.deleteFile(loop); })
+                                .then(function () { return console.log("[PROCESS FILE2] " + loop.nome + " :: FINISHED READ: " + loop.arquivo); })
                                 .catch(function (err) { return console.log('ERROR:: ', err); });
                         })];
                     case 1:
@@ -258,6 +266,34 @@ var TaskLoop = (function () {
                             console.log("[TASK] " + loop.nome + " :: NEW DELAY TYPE => " + delayType);
                             task.delayType = '' + delayType;
                         })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    TaskLoop.prototype.deleteFile = function (loop) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        console.log("[DELETING FILE] " + loop.arquivo);
+                        return [4 /*yield*/, fs.unlink(loop.arquivo, function (err) { return __awaiter(_this, void 0, void 0, function () {
+                                return __generator(this, function (_a) {
+                                    if (err && err.code === 'ENOENT') {
+                                        // file doens't exist
+                                        console.log("File " + loop.arquivo + " doesnt exist, wont remove it.");
+                                    }
+                                    else if (err) {
+                                        // maybe we don't have enough permission
+                                        console.error('[DELETING FILE] Error occurred while trying to remove file:', loop.arquivo);
+                                    }
+                                    else {
+                                        console.log("[DELETING FILE] " + loop.arquivo + " Sucessfully ");
+                                    }
+                                    return [2 /*return*/];
+                                });
+                            }); })];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
             });
