@@ -19,18 +19,16 @@ export class SyncwayFileUpload {
       try {
 
          if (loop.arquivo.match('^https?://')) {
-            console.log('Upload2:')
-            request(loop.arquivo, (error, response, body) => {
-               if (error) {
-                  console.log('error:', error); // Print the error if one occurred
-               }
-               console.log('[GET IMAGE] statusCode:', response && response.statusCode);
-               console.log('[GET IMAGE] content-type:', response.headers['content-type'] );
+            await request(loop.arquivo, async (error, response, body) => {
 
-               form.append('fileToUpload',  body);
+               console.log(`[GET IMAGE] ${loop.nome} statusCode: ${response && response.statusCode}`);
+               console.log(`[GET IMAGE] ${loop.nome} content-type: ${response.headers['content-type']}`  );
+                if (error) {
+                console.error(`[GET IMAGE] ${loop.nome} error:`, error); // Print the error if one occurred
+              }
+               await form.append('fileToUpload',  body);
             });
 
-            console.log('Upload3:');
          } else {
             form.append('fileToUpload',  createReadStream(loop.arquivo));
          }
@@ -65,10 +63,11 @@ export class SyncwayFileUpload {
                  });
                  res.on('end', () => {
                     try {
+                      console.log(rawData);
                        const parsedData = JSON.parse(rawData);
                        resolve(parsedData.delay);
                     } catch (e) {
-                       console.error(e.message);
+                       console.error('FILE UPLOAD ERROR:: ', e.message);
                        reject();
                     }
                  });

@@ -83,7 +83,7 @@ export class TaskLoop {
          await  this.sendFile(task, task.loop).then((delay) => console.log(`[PROCESS HTTP] ${task.loop.nome} 
          :: FINISHED READ: ${task.loop.arquivo}`))
             .then(() => this.deleteFile(task.loop))
-            .catch((err) => console.log('ERROR:: ', err));
+            .catch((err) => console.log(`[PROCESS HTTP] ${task.loop.nome} ERROR:: `, err));
       } else {
 
          try {
@@ -97,7 +97,7 @@ export class TaskLoop {
                } else if (stats.isFile()) {
                   await this.sendFile(task, task.loop).then((delay) => console.log(`[PROCESS FILE] ${task.loop.nome} 
          :: FINISHED READ: ${task.loop.arquivo}`)).then(() => this.deleteFile(task.loop))
-                     .catch((err2) => console.log('ERROR:: ', err2));
+                     .catch((err2) => console.log(`[PROCESS FILE] ${task.loop.nome} ERROR:: `, err2));
                } else {
                   console.warn('It is not file or directory: ', task.loop.arquivo);
                }
@@ -151,7 +151,7 @@ export class TaskLoop {
          this.sendFile(task, loop)
             .then(() => this.deleteFile(loop))
             .then(() => console.log(`[PROCESS FILE2] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
-            .catch((err) => console.log('ERROR:: ', err));
+            .catch((err) => console.log(`[PROCESS FILE] ${loop.nome} ERROR:: `, err));
       });
 
    }
