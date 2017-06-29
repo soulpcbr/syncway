@@ -1,15 +1,7 @@
 <?php
 
-//check folder
 $target_dir = "uploads/";
-if (!file_exists($target_dir)) {
-    mkdir($target_dir, 0777, true);
-}
-
 $data = array();
-$target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
-$imageFileType = pathinfo($target_file, PATHINFO_EXTENSION);
-
 //Check auth
 if (isset($_POST['auth']) && !empty($_POST['auth']) && $_POST['auth'] != "testando") {
     $data['msg'][] = "Sorry, you dont have permission for upload.";
@@ -19,10 +11,18 @@ if (isset($_POST['auth']) && !empty($_POST['auth']) && $_POST['auth'] != "testan
 
     // Check if file already exists
     if (file_exists($target_file)) {
-        $data['msg'][] = "Sorry, file already exists.";
-        $data['status'] = 0;
-    } else {
-        $data['status'] = 1;
+        unlink($target_file);
+    }
+    $data['status'] = 1;
+
+    //Check file exist
+    if (isset($_FILES['fileToUpload']) && !empty($_FILES['fileToUpload'])) {
+        if (isset($_POST['newfilename']) && !empty($_POST['newfilename'])) {
+            $target_file = $target_dir . basename($_POST['newfilename']);
+        } else {
+            $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
+        }
+        $imageFileType = pathinfo($target_file, PATHINFO_EXTENSION);
 
         // Check file size
         if ($_FILES["fileToUpload"]["size"] > 50000000) {
@@ -39,6 +39,9 @@ if (isset($_POST['auth']) && !empty($_POST['auth']) && $_POST['auth'] != "testan
                 $data['status'] = 1;
             }
         }
+    } else {
+        $data['msg'][] = "Sorry, no file to upload.";
+        $data['status'] = 0;
     }
 }
 
@@ -81,6 +84,12 @@ if ($data['status'] == 0) {
     $tipos_de_delay = array('main', 'extra');
     $delay = array_rand($tipos_de_delay);
     $data['delay'] = $tipos_de_delay[$delay];
+
+    //check folder
+    $target_dir = "uploads/";
+    if (!file_exists($target_dir)) {
+        mkdir($target_dir, 0777, true);
+    }
 
     if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
         $data['msg'][] = "The file " . basename($_FILES["fileToUpload"]["name"]) . " has been uploaded.";
