@@ -1,6 +1,6 @@
 {
   "name": "Syncway",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "MIT",
   "author": "Ítalo Castilho",
   "description": "Syncway project built using Angular 4, Express, Loki and Node.",
@@ -47,7 +47,6 @@
     "lokijs": "^1.4.3",
     "morgan": "^1.8.1",
     "multer": "^1.3.0",
-    "node-fetch": "^2.0.0-alpha.5",
     "node-pre-gyp": "^0.6.36",
     "request-stream": "^1.2.2",
     "rotating-file-stream": "^1.2.2",

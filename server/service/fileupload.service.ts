@@ -1,6 +1,5 @@
 import {createReadStream} from 'fs';
 import Loop from '../models/loop';
-const fetch = require('node-fetch');
 const FormData = require('form-data');
 const fs = require('fs');
 const http = require('http');
@@ -8,19 +7,19 @@ const download = require('image-downloader');
 const parseUrl = require('url').parse;
 
 /**
- * Created by icastilho on 23/05/17.
- */
+ * Created by icastilho on 23/05/17. */
 export const D_PATH = 'download/';
 export class SyncwayFileUpload {
 
-   static async upload(loop: Loop) {
-      console.log(`[FILE UPLOAD] ${loop.nome} :: ${loop.arquivo}` );
-      await this.createForm(loop)
-         .then((form: FormData) => this.submitFile(form, loop))
-         .catch((err) => {
-            console.error(`[FILE UPLOAD] ${loop.nome} UNESPECTED ERROR:: `, err.message);
-            throw  err;
-         });
+  static async upload(loop: Loop) {
+    console.log(`[FILE UPLOAD] ${loop.nome} :: ${loop.arquivo}` );
+    await this.createForm(loop)
+      .then((form: FormData) => this.submitFile(form, loop))
+      .catch((err) => {
+        console.error(`[FILE UPLOAD] ${loop.nome} UNESPECTED ERROR:: `, err.message);
+        throw  err;
+      });
+
 
    }
 
