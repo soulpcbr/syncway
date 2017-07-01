@@ -48,6 +48,11 @@ class Loop extends  Model {
     */
    usuario_token: string;
 
+   /**
+    * Pahtname used to delete the file
+    */
+   pathname: string;
+
 }
 
 export default Loop;
