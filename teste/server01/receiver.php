@@ -9,12 +9,6 @@ if (isset($_POST['auth']) && !empty($_POST['auth']) && $_POST['auth'] != "testan
 } else {
     $data['status'] = 1;
 
-    // Check if file already exists
-    if (file_exists($target_file)) {
-        unlink($target_file);
-    }
-    $data['status'] = 1;
-
     //Check file exist
     if (isset($_FILES['fileToUpload']) && !empty($_FILES['fileToUpload'])) {
         if (isset($_POST['newfilename']) && !empty($_POST['newfilename'])) {
@@ -23,6 +17,11 @@ if (isset($_POST['auth']) && !empty($_POST['auth']) && $_POST['auth'] != "testan
             $target_file = $target_dir . basename($_FILES["fileToUpload"]["name"]);
         }
         $imageFileType = pathinfo($target_file, PATHINFO_EXTENSION);
+
+        // Check if file already exists
+        if (file_exists($target_file)) {
+            unlink($target_file);
+        }
 
         // Check file size
         if ($_FILES["fileToUpload"]["size"] > 50000000) {

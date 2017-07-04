@@ -36,91 +36,130 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs_1 = require("fs");
-var fetch = require('node-fetch');
 var FormData = require('form-data');
-var populate = require('form-data/lib/populate');
-var request = require('request');
+var fs = require('fs');
+var http = require('http');
+var download = require('image-downloader');
 var parseUrl = require('url').parse;
 /**
- * Created by icastilho on 23/05/17.
- */
+ * Created by icastilho on 23/05/17. */
+exports.D_PATH = 'download/';
 var SyncwayFileUpload = (function () {
     function SyncwayFileUpload() {
     }
     SyncwayFileUpload.upload = function (loop) {
         return __awaiter(this, void 0, void 0, function () {
-            var form, obj_1, keys, params_1, err_1;
+            var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        console.log('Upload:', loop.arquivo);
-                        form = new FormData();
-                        _a.label = 1;
+                        console.log("[FILE UPLOAD] " + loop.nome + " :: " + loop.arquivo);
+                        return [4 /*yield*/, this.createForm(loop)
+                                .then(function (form) { return _this.submitFile(form, loop); })
+                                .catch(function (err) {
+                                console.error("[FILE UPLOAD] " + loop.nome + " UNESPECTED ERROR:: ", err.message);
+                                throw err;
+                            })];
                     case 1:
-                        _a.trys.push([1, 5, , 6]);
-                        if (loop.arquivo.match('^https?://')) {
-                            console.log('Upload2:');
-                            request(loop.arquivo, function (error, response, body) {
-                                if (error) {
-                                    console.log('error:', error); // Print the error if one occurred
-                                }
-                                console.log('[GET IMAGE] statusCode:', response && response.statusCode);
-                                console.log('[GET IMAGE] content-type:', response.headers['content-type']);
-                                form.append('fileToUpload', body);
-                            });
-                            console.log('Upload3:');
-                        }
-                        else {
-                            form.append('fileToUpload', fs_1.createReadStream(loop.arquivo));
-                        }
-                        if (!loop.data) return [3 /*break*/, 3];
-                        obj_1 = JSON.parse(loop.data);
-                        keys = Object.keys(obj_1);
-                        return [4 /*yield*/, keys.forEach(function (key, index, array) {
-                                form.append(key, obj_1[key]);
-                            })];
-                    case 2:
                         _a.sent();
-                        _a.label = 3;
-                    case 3:
-                        params_1 = parseUrl(loop.api);
-                        return [4 /*yield*/, new Promise(function (resolve, reject) {
-                                form.submit({
-                                    port: params_1.port,
-                                    path: params_1.pathname,
-                                    host: params_1.hostname,
-                                    method: loop.method.toLowerCase(),
-                                }, function (err, res) {
-                                    if (err) {
-                                        reject(err);
-                                    }
-                                    if (!/^application\/json/.test(res.headers['content-type'])) {
-                                        reject(new Error("Invalid content-type.\n" +
-                                            ("Expected application/json but received " + res.headers['content-type'])));
-                                    }
-                                    if (res) {
-                                        var rawData_1 = '';
-                                        res.on('data', function (chunk) {
-                                            rawData_1 += chunk;
-                                        });
-                                        res.on('end', function () {
-                                            try {
-                                                var parsedData = JSON.parse(rawData_1);
-                                                resolve(parsedData.delay);
-                                            }
-                                            catch (e) {
-                                                console.error(e.message);
-                                                reject();
-                                            }
-                                        });
-                                    }
-                                });
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SyncwayFileUpload.createForm = function (loop) {
+        var _this = this;
+        return new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
+            var form, obj_1, keys, pathname, filename;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        form = new FormData();
+                        if (loop.data) {
+                            obj_1 = JSON.parse(loop.data);
+                            keys = Object.keys(obj_1);
+                            keys.forEach(function (key, index, array) {
+                                form.append(key, obj_1[key]);
+                            });
+                        }
+                        if (!loop.arquivo.match('^https?://')) return [3 /*break*/, 2];
+                        if (!fs.existsSync("" + exports.D_PATH)) {
+                            fs.mkdirSync("" + exports.D_PATH);
+                        }
+                        pathname = new Date().getTime();
+                        fs.mkdirSync("" + exports.D_PATH + pathname);
+                        return [4 /*yield*/, this.downloadIMG({
+                                url: loop.arquivo,
+                                dest: exports.D_PATH + pathname,
                             })];
-                    case 4: return [2 /*return*/, _a.sent()];
-                    case 5:
-                        err_1 = _a.sent();
-                        throw err_1;
-                    case 6: return [2 /*return*/];
+                    case 1:
+                        filename = _a.sent();
+                        loop.pathname = exports.D_PATH + pathname;
+                        form.append('fileToUpload', fs_1.createReadStream(filename));
+                        resolve(form);
+                        return [3 /*break*/, 3];
+                    case 2:
+                        console.log('else');
+                        form.append('fileToUpload', fs_1.createReadStream(loop.arquivo));
+                        loop.pathname = loop.arquivo;
+                        resolve(form);
+                        _a.label = 3;
+                    case 3: return [2 /*return*/];
+                }
+            });
+        }); });
+    };
+    SyncwayFileUpload.downloadIMG = function (options) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, filename, image, e_1;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _b.trys.push([0, 2, , 3]);
+                        console.log("[DOWNLOADING FILE]  :: " + options.url);
+                        return [4 /*yield*/, download.image(options)];
+                    case 1:
+                        _a = _b.sent(), filename = _a.filename, image = _a.image;
+                        return [2 /*return*/, filename];
+                    case 2:
+                        e_1 = _b.sent();
+                        throw e_1;
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    SyncwayFileUpload.submitFile = function (form, loop) {
+        return new Promise(function (resolve, reject) {
+            var params = parseUrl(loop.api);
+            form.submit({
+                port: params.port,
+                path: params.pathname,
+                host: params.hostname,
+                method: loop.method.toLowerCase(),
+            }, function (err, res) {
+                if (err) {
+                    reject(err);
+                }
+                if (!/^application\/json/.test(res.headers['content-type'])) {
+                    console.error("Invalid content-type.\n Expected application/json but received " + res.headers['content-type']);
+                }
+                if (res) {
+                    var rawData_1 = '';
+                    res.on('data', function (chunk) {
+                        rawData_1 += chunk;
+                    });
+                    res.on('end', function () {
+                        try {
+                            console.log("[FILE UPLOAD] " + loop.nome + " Response::", rawData_1);
+                            var parsedData = JSON.parse(rawData_1);
+                            resolve(parsedData.delay);
+                        }
+                        catch (e) {
+                            console.error("[FILE UPLOAD] " + loop.nome + " ERROR:: ", e);
+                            reject(e);
+                        }
+                    });
                 }
             });
         });

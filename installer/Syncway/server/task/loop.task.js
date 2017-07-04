@@ -36,10 +36,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var async_1 = require("async");
-var task_1 = require("./task");
-var loop_service_1 = require("../service/loop.service");
 var fileupload_service_1 = require("../service/fileupload.service");
-var fs = require('fs');
+var loop_service_1 = require("../service/loop.service");
+var task_1 = require("./task");
+var fs = require('fs-extra');
 var tasks = [];
 function getTasks() {
     return tasks;
@@ -60,6 +60,12 @@ var TaskLoop = (function () {
     }
     TaskLoop.prototype.start = function () {
         var _this = this;
+        fs.remove(fileupload_service_1.D_PATH)
+            .then(function () {
+            console.log("[CLEANING PATH] :: " + fileupload_service_1.D_PATH);
+        }).catch(function (err) {
+            console.error("[CLEANING PATH] :: " + fileupload_service_1.D_PATH + " :: ", err);
+        });
         this.loopService.getAll().then(function (loops) {
             async_1.default.each(loops, function (loop, callback) {
                 // Perform operation on file here.
@@ -123,7 +129,6 @@ var TaskLoop = (function () {
     TaskLoop.prototype.process = function (task) {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
-            var e_1;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -131,55 +136,36 @@ var TaskLoop = (function () {
                         console.log("[PROCESS HTTP] " + task.loop.nome + " :: It is http origin: " + task.loop.arquivo);
                         return [4 /*yield*/, this.sendFile(task, task.loop).then(function (delay) { return console.log("[PROCESS HTTP] " + task.loop.nome + " \n         :: FINISHED READ: " + task.loop.arquivo); })
                                 .then(function () { return _this.deleteFile(task.loop); })
-                                .catch(function (err) { return console.log('ERROR:: ', err); })];
+                                .catch(function (err) { return console.log("[PROCESS HTTP] " + task.loop.nome + " ERROR:: ", err); })];
                     case 1:
                         _a.sent();
-                        return [3 /*break*/, 5];
+                        return [3 /*break*/, 3];
                     case 2:
-                        _a.trys.push([2, 4, , 5]);
-                        return [4 /*yield*/, fs.stat(task.loop.arquivo, function (err, stats) { return __awaiter(_this, void 0, void 0, function () {
-                                var _this = this;
-                                return __generator(this, function (_a) {
-                                    switch (_a.label) {
-                                        case 0:
-                                            if (err) {
-                                                console.log("[FILE NOT FOUND] " + task.loop.nome + " ::  " + task.loop.arquivo);
-                                                return [2 /*return*/];
-                                            }
-                                            if (!stats.isDirectory()) return [3 /*break*/, 2];
-                                            return [4 /*yield*/, this.readDir(task)];
-                                        case 1:
-                                            _a.sent();
-                                            return [3 /*break*/, 5];
-                                        case 2:
-                                            if (!stats.isFile()) return [3 /*break*/, 4];
-                                            return [4 /*yield*/, this.sendFile(task, task.loop).then(function (delay) { return console.log("[PROCESS FILE] " + task.loop.nome + " \n         :: FINISHED READ: " + task.loop.arquivo); }).then(function () { return _this.deleteFile(task.loop); })
-                                                    .catch(function (err2) { return console.log('ERROR:: ', err2); })];
-                                        case 3:
-                                            _a.sent();
-                                            return [3 /*break*/, 5];
-                                        case 4:
-                                            console.warn('It is not file or directory: ', task.loop.arquivo);
-                                            _a.label = 5;
-                                        case 5: return [2 /*return*/];
-                                    }
-                                });
-                            }); })];
-                    case 3:
-                        _a.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
-                        e_1 = _a.sent();
-                        // Handle error
-                        if (e_1.code === 'ENOENT') {
-                            // no such file or directory
-                            console.error("ENOENT: " + task.loop.nome + ": " + task.loop.arquivo + " :: No such a file or directory");
-                        }
-                        else {
-                            // do something else
-                        }
-                        return [3 /*break*/, 5];
-                    case 5: return [2 /*return*/];
+                        fs.stat(task.loop.arquivo)
+                            .then(function (stats) {
+                            if (stats.isDirectory()) {
+                                _this.readDir(task);
+                            }
+                            else if (stats.isFile()) {
+                                _this.sendFile(task, task.loop)
+                                    .then(function (delay) { return console.log("[PROCESS FILE] " + task.loop.nome + " :: FINISHED READ: " + task.loop.arquivo); })
+                                    .then(function () { return _this.deleteFile(task.loop); })
+                                    .catch(function (err2) { return console.log("[PROCESS FILE] " + task.loop.nome + " ERROR:: ", err2); });
+                            }
+                            else {
+                                console.warn('It is not file or directory: ', task.loop.arquivo);
+                            }
+                        })
+                            .catch(function (err) {
+                            if (err.code === 'ENOENT') {
+                                console.error("[FILE NOT FOUND]: " + task.loop.nome + ": " + task.loop.arquivo + " :: No such a file or directory");
+                            }
+                            else {
+                                console.error('[PROCESS]: ', err);
+                            }
+                        });
+                        _a.label = 3;
+                    case 3: return [2 /*return*/];
                 }
             });
         });
@@ -188,49 +174,27 @@ var TaskLoop = (function () {
         return __awaiter(this, void 0, void 0, function () {
             var _this = this;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, fs.readdir(task.loop.arquivo, function (err2, files) { return __awaiter(_this, void 0, void 0, function () {
-                            var _this = this;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        if (err2) {
-                                            console.error("[PROCESS DIR] " + task.loop.nome + " :: ERROR READING: " + task.loop.arquivo);
-                                            throw err2;
-                                        }
-                                        console.log("[PROCESS DIR] " + task.loop.nome + " :: READING: " + task.loop.arquivo + " - " + files.length + " files inside");
-                                        if (!(files.length > 0)) return [3 /*break*/, 2];
-                                        return [4 /*yield*/, async_1.default.each(files, function (file, callback) { return __awaiter(_this, void 0, void 0, function () {
-                                                var _this = this;
-                                                var lo;
-                                                return __generator(this, function (_a) {
-                                                    switch (_a.label) {
-                                                        case 0:
-                                                            lo = Object.assign({}, task.loop);
-                                                            lo.arquivo = task.loop.arquivo + '/' + file;
-                                                            console.log(file);
-                                                            return [4 /*yield*/, this.sendFile(task, lo)
-                                                                    .then(function () { return _this.deleteFile(task.loop); })
-                                                                    .then(callback)];
-                                                        case 1:
-                                                            _a.sent();
-                                                            return [2 /*return*/];
-                                                    }
-                                                });
-                                            }); }, function (errFile) {
-                                                console.log("[PROCESS DIR] " + task.loop.nome + " \n               :: FINISHED READ: " + task.loop.arquivo + " " + (errFile ? '- With Errors!!!' : ''));
-                                            })];
-                                    case 1:
-                                        _a.sent();
-                                        _a.label = 2;
-                                    case 2: return [2 /*return*/];
-                                }
-                            });
-                        }); })];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/];
-                }
+                fs.readdir(task.loop.arquivo)
+                    .then(function (files) {
+                    console.log("[PROCESS DIR] " + task.loop.nome + " :: READING: " + task.loop.arquivo + " - " + files.length + " files inside");
+                    if (files.length > 0) {
+                        async_1.default.each(files, function (file, callback) {
+                            // const lo: Loop = JSON.parse(JSON.stringify(task.loop));
+                            var lo = Object.assign({}, task.loop);
+                            lo.arquivo = task.loop.arquivo + '/' + file;
+                            console.log(file);
+                            _this.sendFile(task, lo)
+                                .then(function () { return _this.deleteFile(lo); })
+                                .then(callback);
+                        }, function (errFile) {
+                            console.log("[PROCESS DIR] " + task.loop.nome + " \n               :: FINISHED READ: " + task.loop.arquivo + " " + (errFile ? '- With Errors!!!' : ''));
+                        });
+                    }
+                })
+                    .catch(function (err2) {
+                    console.error("[PROCESS DIR] " + task.loop.nome + " :: ERROR READING: " + task.loop.arquivo);
+                });
+                return [2 /*return*/];
             });
         });
     };
@@ -249,7 +213,7 @@ var TaskLoop = (function () {
                             _this.sendFile(task, loop)
                                 .then(function () { return _this.deleteFile(loop); })
                                 .then(function () { return console.log("[PROCESS FILE2] " + loop.nome + " :: FINISHED READ: " + loop.arquivo); })
-                                .catch(function (err) { return console.log('ERROR:: ', err); });
+                                .catch(function (err) { return console.log("[PROCESS FILE] " + loop.nome + " ERROR:: ", err); });
                         })];
                     case 1:
                         _a.sent();
@@ -273,29 +237,29 @@ var TaskLoop = (function () {
     };
     TaskLoop.prototype.deleteFile = function (loop) {
         return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        console.log("[DELETING FILE] " + loop.arquivo);
-                        return [4 /*yield*/, fs.unlink(loop.arquivo, function (err) { return __awaiter(_this, void 0, void 0, function () {
-                                return __generator(this, function (_a) {
-                                    if (err && err.code === 'ENOENT') {
-                                        // file doens't exist
-                                        console.log("File " + loop.arquivo + " doesnt exist, wont remove it.");
-                                    }
-                                    else if (err) {
-                                        // maybe we don't have enough permission
-                                        console.error('[DELETING FILE] Error occurred while trying to remove file:', loop.arquivo);
-                                    }
-                                    else {
-                                        console.log("[DELETING FILE] " + loop.arquivo + " Sucessfully ");
-                                    }
-                                    return [2 /*return*/];
-                                });
-                            }); })];
-                    case 1: return [2 /*return*/, _a.sent()];
+                console.log("[DELETING FILE] " + loop.pathname);
+                if (loop.pathname === '') {
+                    console.log("[DELETING FILE] Wy enter here? :: " + loop.pathname);
+                    return [2 /*return*/];
                 }
+                fs.remove(loop.pathname)
+                    .then(function () {
+                    console.log("[DELETING FILE ] Sucessfully :: " + loop.pathname + "  ");
+                    loop.pathname = '';
+                })
+                    .catch(function (err) {
+                    if (err && err.code === 'ENOENT') {
+                        // file doens't exist
+                        console.log("File " + loop.pathname + " doesnt exist, wont remove it.");
+                    }
+                    else {
+                        // maybe we don't have enough permission
+                        console.error('[DELETING FILE] Error occurred while trying to remove file:', loop.pathname);
+                        console.error(err);
+                    }
+                });
+                return [2 /*return*/];
             });
         });
     };
