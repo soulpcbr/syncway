@@ -1,10 +1,11 @@
 import {createReadStream} from 'fs';
 import Loop from '../models/loop';
+import * as Ffmpeg from 'fluent-ffmpeg';
 const FormData = require('form-data');
 const fs = require('fs');
-const http = require('http');
 const download = require('image-downloader');
 const parseUrl = require('url').parse;
+
 
 /**
  * Created by icastilho on 23/05/17. */
@@ -19,14 +20,12 @@ export class SyncwayFileUpload {
         console.error(`[FILE UPLOAD] ${loop.nome} UNESPECTED ERROR:: `, err.message);
         throw  err;
       });
-
-
    }
 
    static createForm(loop: Loop): Promise<FormData> {
 
        return new Promise( async (resolve, reject) => {
-         const form = new FormData();
+         let form = new FormData();
 
             if (loop.data) {
                const obj = JSON.parse(loop.data);
@@ -35,30 +34,41 @@ export class SyncwayFileUpload {
                   form.append(key, obj[key]);
                });
             }
-
-            if (loop.arquivo.match('^https?://')) {
-               if (!fs.existsSync(`${D_PATH}`)) {
-                  fs.mkdirSync(`${D_PATH}`);
+            try {
+               if (loop.arquivo.match('^https?://')) {
+                  form = this.downloadImage(loop, form, this.downloadHttps);
+                  resolve(form);
+               } else if (loop.arquivo.match('^rtsp?://')) {
+                  form = this.downloadImage(loop, form, this.downloadRtsp);
+                  resolve(form);
+               } else {
+                  console.log('else');
+                  form.append('fileToUpload', createReadStream(loop.arquivo));
+                  loop.pathname = loop.arquivo;
+                  resolve(form);
                }
-               const pathname = new Date().getTime();
-               fs.mkdirSync(`${D_PATH}${pathname}`);
-               const filename = await this.downloadIMG({
-                  url: loop.arquivo,
-                  dest: D_PATH + pathname,
-               });
-               loop.pathname = D_PATH + pathname;
-               form.append('fileToUpload', createReadStream(filename));
-               resolve(form);
-            } else {
-               console.log('else');
-               form.append('fileToUpload', createReadStream(loop.arquivo));
-               loop.pathname = loop.arquivo;
-               resolve(form);
+            } catch (err) {
+               reject(err);
             }
       });
    }
 
-   static async downloadIMG(options) {
+   static async downloadImage(loop: Loop, form: FormData, fdonwload: any) {
+      if (!fs.existsSync(`${D_PATH}`)) {
+         fs.mkdirSync(`${D_PATH}`);
+      }
+      const pathname = new Date().getTime();
+      fs.mkdirSync(`${D_PATH}${pathname}`);
+      const filename = await fdonwload({
+         url: loop.arquivo,
+         dest: D_PATH + pathname,
+      });
+      loop.pathname = D_PATH + pathname;
+      form.append('fileToUpload', createReadStream(filename));
+      return form;
+   }
+
+   static async downloadHttps(options) {
       try {
          console.log(`[DOWNLOADING FILE]  :: ${options.url}` );
          const { filename, image } = await download.image(options);
@@ -66,6 +76,35 @@ export class SyncwayFileUpload {
       } catch (e) {
          throw e;
       }
+   }
+
+   static async downloadRtsp(options) {
+      console.log(`[DOWNLOADING RTSP] BEGAN :: ${options.url}`);
+      const timestamp = new Date().getTime();
+      const fileName = `${options.dest}/img_${timestamp}.jpeg`;
+      return new Promise((resolve, reject) => {
+         const command = Ffmpeg(options.url)
+            .format('image2')
+            .outputOptions('-updatefirst 1')
+            .duration(1)
+            // .takeScreenshots(1, options.dest)
+            .on('start', () => {
+               console.log('[DOWNLOADING RTSP] STARTING :: ');
+            })
+            .on('end', () => {
+               console.log('[DOWNLOADING RTSP] FINISHED :: ');
+               resolve(fileName);
+            })
+            .on('finish', () => {
+               console.log(`[DOWNLOADING RTSP] ENDED :: ${options.dest}`);
+               resolve(fileName);
+            })
+            .on('error', (error) => {
+               reject(error);
+            })
+            .saveToFile(fileName);
+
+      });
    }
 
 
