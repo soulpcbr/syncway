@@ -1,6 +1,6 @@
 {
   "name": "Syncway",
-  "version": "1.0.4,
+  "version": "1.0.4",
   "license": "MIT",
   "author": "Ítalo Castilho",
   "description": "Syncway project built using Angular 4, Express, Loki and Node.",
@@ -36,8 +36,10 @@
     "classlist.js": "^1.1.20150312",
     "core-js": "^2.5.1",
     "cors": "^2.8.4",
+    "cross-spawn": "^5.1.0",
     "dotenv": "^4.0.0",
     "express": "^4.16.2",
+    "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
     "font-awesome": "^4.7.0",
     "form-data": "^2.3.1",
@@ -60,7 +62,7 @@
     "zone.js": "^0.8.18"
   },
   "devDependencies": {
-    "@angular/cli": "^1.6.0",
+    "@angular/cli": "^1.6.1",
     "@angular/compiler-cli": "^4.4.6",
     "@types/jasmine": "2.5.38",
     "@types/node": "^6.0.92",

@@ -84,8 +84,7 @@ export class SyncwayFileUpload {
       const fileName = `${options.dest}/img_${timestamp}.jpeg`;
       return new Promise((resolve, reject) => {
          const command = Ffmpeg(options.url)
-            .format('image2')
-            .outputOptions('-updatefirst 1')
+            .outputOptions(['-vf', 'fps=fps=1/10', '-update 1'])
             .duration(1)
             // .takeScreenshots(1, options.dest)
             .on('start', () => {
@@ -99,7 +98,9 @@ export class SyncwayFileUpload {
                console.log(`[DOWNLOADING RTSP] ENDED :: ${options.dest}`);
                resolve(fileName);
             })
-            .on('error', (error) => {
+            .on('error', (error, stdout, stderr) => {
+                console.log('ffmpeg stdout:\n' + stdout);
+                console.log('ffmpeg stderr:\n' + stderr);
                reject(error);
             })
             .saveToFile(fileName);
