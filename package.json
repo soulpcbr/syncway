@@ -1,6 +1,6 @@
 {
   "name": "Syncway",
-  "version": "1.0.4,
+  "version": "1.0.4",
   "license": "MIT",
   "author": "Ítalo Castilho",
   "description": "Syncway project built using Angular 4, Express, Loki and Node.",
