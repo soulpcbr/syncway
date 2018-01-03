@@ -1,10 +1,15 @@
 import {createReadStream} from 'fs';
 import Loop from '../models/loop';
-import * as Ffmpeg from 'fluent-ffmpeg';
+
 const FormData = require('form-data');
 const fs = require('fs');
 const download = require('image-downloader');
 const parseUrl = require('url').parse;
+
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
+console.log(ffmpeg.path, ffmpeg.version);
 
 
 /**
@@ -81,33 +86,34 @@ export class SyncwayFileUpload {
    static async downloadRtsp(options) {
       console.log(`[DOWNLOADING RTSP] BEGAN :: ${options.url}`);
       const timestamp = new Date().getTime();
-      const fileName = `/fileName${timestamp}.jpeg`;
-      let path = `${options.dest}/`;
+      const fileName = `/fileName${timestamp}.png`;
+      // const path = `${options.dest}`;
       return new Promise((resolve, reject) => {
-         const command = Ffmpeg(options.url)
-            // .outputOptions(['-vf', 'fps=fps=5/60', '-update 1'])
-            // .duration(process.env.RTSP_LOAD_DURATION || 5)
+         const command = ffmpeg(options.url)
+            .outputOptions(['-vf', 'fps=1'])
+            .duration(process.env.RTSP_LOAD_DURATION || 1)
             .on('start', () => {
                console.log('[DOWNLOADING RTSP] STARTING :: ');
             })
             .on('end', (filen) => {
-               console.log(`[DOWNLOADING RTSP] FINISHED :: `);
-               resolve(path);
+               console.log(`[DOWNLOADING RTSP] ENDED :: ${fileName}`);
+               resolve(options.dest + fileName);
             })
             .on('finish', (filen) => {
-               console.log(`[DOWNLOADING RTSP] ENDED :: `);
-               resolve(path);
+               console.log(`[DOWNLOADING RTSP] FINISHED :: ${fileName}`);
+               resolve(fileName);
             })
-           .on('filenames', (filenames) => {
-             console.log('screenshots are ' + filenames.join(', '));
+/*           .on('filenames', (filenames) => {
+             console.log('`[DOWNLOADING RTSP] SCREENSHOTS ' + filenames.join(', '));
              path = path + filenames[0];
-           })
+           })*/
             .on('error', (error, stdout, stderr) => {
                 console.log('ffmpeg stdout:\n' + stdout);
                 console.log('ffmpeg stderr:\n' + stderr);
                reject(error);
             })
-           .takeScreenshots({count: 1,  timemarks: [ '2', '2' ], filename: fileName}, options.dest);
+           .saveToFile(options.dest + fileName);
+           // .takeScreenshots({count: 1,  timemarks: [ '2', '2' ], filename: fileName}, options.dest);
       });
    }
 

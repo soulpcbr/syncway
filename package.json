@@ -26,6 +26,7 @@
     "@angular/platform-browser": "^4.4.6",
     "@angular/platform-browser-dynamic": "^4.4.6",
     "@angular/router": "^4.4.6",
+    "@ffmpeg-installer/ffmpeg": "^1.0.13",
     "@types/fluent-ffmpeg": "^2.1.5",
     "angular2-jwt": "^0.2.3",
     "async": "^2.6.0",

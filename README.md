@@ -22,19 +22,14 @@ Other tools and technologies used:
 * This files can be external edited then application will automatically reload DataBase 
 
 ## Prerequisites
-1. Install [Node.js](https://nodejs.org) ^7.9.0 
+1. Install [Node.js](https://nodejs.org) ^8.9.4 
 2. Install Angular CLI: `npm i -g @angular/cli`
 3. From project root folder install all the dependencies: `npm i`
-4. Install lib  [FFMPEG](https://ffmpeg.org/) or unpack **bin/ffmpeg.zip** into project directory.
-
-### Dev Windows
-* [FFMPEG Windows installation] (https://www.wikihow.com/Install-FFmpeg-on-Windows)
-* Add to Environment variables `FFMPEG_PATH` and `FFPROBE_PATH` pointing to `ffmpeg.exe` and `ffprobe.exe` installation files.
 
 
 ## Run
 ### Development mode
-`npm run dev`: [concurrently](https://github.com/kimmobrunfeldt/concurrently) execute MongoDB, Angular build, TypeScript compiler and Express server.
+`npm run dev`: [concurrently](https://github.com/kimmobrunfeldt/concurrently) execute Angular build, TypeScript compiler and Express server.
 
 A window will automatically open at [localhost:4200](http://localhost:4200). Angular and Express files are being watched. Any change automatically creates a new bundle, restart Express server and reload your browser.
 
@@ -44,25 +39,13 @@ A window will automatically open at [localhost:4200](http://localhost:4200). Ang
 
 ***At first tim you must execute as dev bundle to can create admin user***
  
+## Deploy
+1. Extract file `bin/Syncway.zip`
+2. go to extracted folder 
+3. execute 
+4. `install.bat`
+5. `start.bat`
 
-## Deploy (Heroku)
-1. Go to Heroku and create a new app
-2. Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-command-line)
-3. `heroku login`
-4. `cd my-project/`
-5. `git init`
-6. `heroku git:remote -a your-app-name`
-7. Download this repo and copy all files into `my-project` folder
-8. Edit `.gitignore` and remove line with `/dist`
-9. Edit in `db.ts` the url of MongoDB server to a real server. You can create a MongoDB server with Heroku or mLab.
-10. `npm i`
-11. `ng build -prod` or `ng build -aot -prod`
-12. `tsc -p server`
-13. `git add .`
-14. `git commit -m "Going to Heroku"`
-15. `git push heroku master`
-16. `heroku open`
-17. A window will open with your app online
 
 ## Running unit tests
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
