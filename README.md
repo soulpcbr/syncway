@@ -1,4 +1,4 @@
-# Syncway v1.0.4
+ # Syncway v1.0.5
 
 
 The frontend is generated with [Angular CLI](https://github.com/angular/angular-cli). The backend is made from scratch. Whole stack in [TypeScript](https://www.typescriptlang.org).
@@ -27,7 +27,7 @@ Other tools and technologies used:
 3. From project root folder install all the dependencies: `npm i`
 4. Install lib  [FFMPEG](https://ffmpeg.org/) or unpack **bin/ffmpeg.zip** into project directory.
 
-### For Dev Windows
+### Dev Windows
 * [FFMPEG Windows installation] (https://www.wikihow.com/Install-FFmpeg-on-Windows)
 * Add to Environment variables `FFMPEG_PATH` and `FFPROBE_PATH` pointing to `ffmpeg.exe` and `ffprobe.exe` installation files.
 

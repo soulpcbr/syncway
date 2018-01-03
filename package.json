@@ -1,6 +1,6 @@
 {
   "name": "Syncway",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "MIT",
   "author": "Ítalo Castilho",
   "description": "Syncway project built using Angular 4, Express, Loki and Node.",
@@ -41,6 +41,7 @@
     "express": "^4.16.2",
     "ffmpeg": "0.0.4",
     "fluent-ffmpeg": "^2.1.2",
+    "fluent-ffmpeg-extended": "^1.5.2",
     "font-awesome": "^4.7.0",
     "form-data": "^2.3.1",
     "fs-extra": "^3.0.1",

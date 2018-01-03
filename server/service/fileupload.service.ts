@@ -81,30 +81,33 @@ export class SyncwayFileUpload {
    static async downloadRtsp(options) {
       console.log(`[DOWNLOADING RTSP] BEGAN :: ${options.url}`);
       const timestamp = new Date().getTime();
-      const fileName = `${options.dest}/img_${timestamp}.jpeg`;
+      const fileName = `/fileName${timestamp}.jpeg`;
+      let path = `${options.dest}/`;
       return new Promise((resolve, reject) => {
          const command = Ffmpeg(options.url)
-            .outputOptions(['-vf', 'fps=fps=1/10', '-update 1'])
-            .duration(1)
-            // .takeScreenshots(1, options.dest)
+            // .outputOptions(['-vf', 'fps=fps=5/60', '-update 1'])
+            // .duration(process.env.RTSP_LOAD_DURATION || 5)
             .on('start', () => {
                console.log('[DOWNLOADING RTSP] STARTING :: ');
             })
-            .on('end', () => {
-               console.log('[DOWNLOADING RTSP] FINISHED :: ');
-               resolve(fileName);
+            .on('end', (filen) => {
+               console.log(`[DOWNLOADING RTSP] FINISHED :: `);
+               resolve(path);
             })
-            .on('finish', () => {
-               console.log(`[DOWNLOADING RTSP] ENDED :: ${options.dest}`);
-               resolve(fileName);
+            .on('finish', (filen) => {
+               console.log(`[DOWNLOADING RTSP] ENDED :: `);
+               resolve(path);
             })
+           .on('filenames', (filenames) => {
+             console.log('screenshots are ' + filenames.join(', '));
+             path = path + filenames[0];
+           })
             .on('error', (error, stdout, stderr) => {
                 console.log('ffmpeg stdout:\n' + stdout);
                 console.log('ffmpeg stderr:\n' + stderr);
                reject(error);
             })
-            .saveToFile(fileName);
-
+           .takeScreenshots({count: 1,  timemarks: [ '2', '2' ], filename: fileName}, options.dest);
       });
    }
 

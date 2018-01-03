@@ -12,7 +12,7 @@ SET FFPROBE_PATH="%CURRENT_DIR%\ffmpeg\bin\ffprobe.exe"
 ECHO Installing service "%SERVICENAME%"
 cd "%PATH%"
 nssm install %SERVICENAME% %PATH%%SERVICE_EXE%
-nssm set %SERVICENAME% AppEnvironmentExtra SECRET_TOKEN=syncthewayitgone FFMPEG_PATH="%CURRENT_DIR%\ffmpeg\bin\ffmpeg.exe" FFPROBE_PATH="%CURRENT_DIR%\ffmpeg\bin\ffprobe.exe"
+nssm set %SERVICENAME% AppEnvironmentExtra SECRET_TOKEN=syncthewayitgone RTSP_LOAD_DURATION=5 FFMPEG_PATH="%CURRENT_DIR%\ffmpeg\bin\ffmpeg.exe" FFPROBE_PATH="%CURRENT_DIR%\ffmpeg\bin\ffprobe.exe"
 cd "%CURRENT_DIR%"
 GOTO end
 :fail
