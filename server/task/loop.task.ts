@@ -92,10 +92,11 @@ export class TaskLoop {
          console.log('Last execution can`t delete try to delete again file: ', task.loop.pathname);
          this.deleteFile(task.loop);
       }*/
-      if (task.loop.arquivo.match('^https?://')) {
+      if (task.loop.arquivo.match('^https?://') || task.loop.arquivo.match('^rtsp?://')) {
          console.log(`[PROCESS HTTP] ${task.loop.nome} :: It is http origin: ${task.loop.arquivo}`);
-         await  this.sendFile(task, task.loop).then((delay) => console.log(`[PROCESS HTTP] ${task.loop.nome} 
-         :: FINISHED READ: ${task.loop.arquivo}`))
+         await  this.sendFile(task, task.loop)
+            .then((delay) => console.log(`[PROCESS HTTP] ${task.loop.nome} 
+                                                   :: FINISHED READ: ${task.loop.arquivo}`))
             .then(() => this.deleteFile(task.loop))
             .catch((err) => console.log(`[PROCESS HTTP] ${task.loop.nome} ERROR:: `, err));
       } else {

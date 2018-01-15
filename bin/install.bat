@@ -6,6 +6,7 @@ SET PATH=%~dp0
 SET SERVICE_EXE=%"%\node.exe server\app.js%"%
 SET SERVICENAME=%"%Syncway%"%
 
+
 :install
 ECHO Installing service "%SERVICENAME%"
 cd "%PATH%"
