@@ -9,6 +9,8 @@ import * as util from 'util';
 
 import setRoutes from './routes';
 import setTask from './tasks';
+import * as socketIo from 'socket.io';
+
 
 const app = express();
 app.use(cors());
@@ -60,14 +62,33 @@ dotenv.load({ path: '.env' });
 
 setRoutes(app);
 
-setTask(app);
-
-app.get('/*', function(req, res) {
+app.get('/', function(req, res) {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
-app.listen(app.get('port'), () => {
+
+const server = app.listen(app.get('port'), () => {
   console.log('Angular Full Stack listening on port ' + app.get('port'));
 });
+
+/**
+ * Socket events
+ */
+const io = socketIo(server, {transports: ['websocket']});
+
+io.on('connect', (socket: any) => {
+  console.log('Connected client on port %s.');
+  socket.on('status', (s: any) => {
+    console.log('[loop](status): %s', JSON.stringify(s));
+    io.emit('status', s);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client disconnected');
+  });
+});
+
+
+setTask(io);
 
 export { app };
 
@@ -89,3 +110,4 @@ console.error = function(){
 console.debug = function(){
   logger.debug.apply(logger, formatArgs(arguments));
 };
+
