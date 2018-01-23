@@ -69,7 +69,7 @@ export class SyncwayFileUpload {
          dest: D_PATH + pathname,
       });
       loop.pathname = D_PATH + pathname;
-      form.append('fileToUpload', createReadStream(filename));
+      form.append('fileToUpload', filename);
       return form;
    }
 

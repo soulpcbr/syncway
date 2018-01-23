@@ -20,6 +20,9 @@
       <a routerLink="/admin" class="nav-item nav-link" routerLinkActive="active" *ngIf="auth.loggedIn && auth.isAdmin">
         <i class="fa fa-lock"></i> Admin
       </a>
+      <a routerLink="/logs" class="nav-item nav-link" routerLinkActive="active" *ngIf="auth.loggedIn && auth.isAdmin">
+        <i class="fa fa-lock"></i> Logs
+      </a>
       <a routerLink="/logout" class="nav-item nav-link" routerLinkActive="active" *ngIf="auth.loggedIn">
         <i class="fa fa-sign-out"></i> Logout
       </a>

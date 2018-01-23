@@ -1,4 +1,3 @@
-import async from 'async';
 import Loop from '../models/loop';
 import {
    D_PATH,
@@ -6,12 +5,15 @@ import {
 } from '../service/fileupload.service';
 import loopInstance, {LoopService} from '../service/loop.service';
 import {Task, STATUS} from './task';
+import {each} from 'async';
 const fs  = require('fs-extra');
 
 const tasks: Task[] = [];
+
 export default function getTasks() {
    return tasks;
 }
+
 function push(task: Task) {
    tasks.push(task);
 }
@@ -40,22 +42,25 @@ export class TaskLoop {
             console.error(`[CLEANING PATH] :: ${D_PATH} :: `, err);
          });
 
-      this.loopService.getAll().then((loops) => {
+      this.loopService.getAll().then((loops: any[]) => {
 
-         async.each(loops, (loop, callback) => {
+        return new Promise((resolve, rejected) => {
+          each(loops, (loop, callback) => {
             this.onInsert(loop);
             callback();
-         }, (err) => {
+          }, (err) => {
             // if any of the file processing produced an error, err would equal that error
             if (err) {
-               // One of the iterations produced an error.
-               // All processing will now stop.
-               console.log('A loop failed to process');
+              // One of the iterations produced an error.
+              // All processing will now stop.
+              console.log('A loop failed to process');
+              return rejected(err);
             } else {
-               // console.log('All loop have been processed successfully');
+              return resolve();
+              // console.log('All loop have been processed successfully');
             }
-         });
-
+          });
+        });
       });
    }
 
@@ -95,7 +100,7 @@ export class TaskLoop {
                                                    :: FINISHED READ: ${task.loop.arquivo}`))
             .then(() => this.deleteFile(task.loop))
             .catch((err) => {
-              console.log(`[PROCESS HTTP] ${task.loop.nome} ERROR:: `, err)
+              console.log(`[PROCESS HTTP] ${task.loop.nome} ERROR:: `, err);
               throw  err;
             });
       } else {
@@ -124,24 +129,38 @@ export class TaskLoop {
    }
 
    async readDir(task: Task) {
-      fs.readdir(task.loop.arquivo)
+      return fs.readdir(task.loop.arquivo)
          .then((files) => {
             console.log(`[PROCESS DIR] ${task.loop.nome} :: READING: ${task.loop.arquivo} - ${files.length} files inside`);
             if (files.length > 0) {
-               async.each(files, (file, callback) => {
+
+              return new Promise((resolve, rejected) => {
+                each(files, (file, callback) => {
                   // const lo: Loop = JSON.parse(JSON.stringify(task.loop));
                   const lo: Loop = Object.assign({}, task.loop);
                   lo.arquivo = task.loop.arquivo + '/' + file;
                   console.log(file);
                   this.sendFile(task, lo)
-                     .then(() => this.deleteFile(lo))
-                     .then(callback);
-               }, (errFile) => {
-                  console.log(`[PROCESS DIR] ${task.loop.nome} 
-               :: FINISHED READ: ${task.loop.arquivo} ${errFile ? '- With Errors!!!'  : ''}`);
-               });
-            }
+                    .then(() => this.deleteFile(lo))
+                    .then(() => {
+                      callback();
+                      return;
+                    });
+                }, (err) => {
 
+                  if (err) {
+                    // One of the iterations produced an error.
+                    // All processing will now stop.
+                    console.log(`[PROCESS DIR] ${task.loop.nome} 
+               :: FINISHED READ: ${task.loop.arquivo} ${err ? '- With Errors!!!' : ''}`);
+                    return rejected(err);
+                  } else {
+                    return resolve();
+                    // console.log('All loop have been processed successfully');
+                  }
+                });
+              });
+            }
          })
          .catch((err2) => {
             console.error(`[PROCESS DIR] ${task.loop.nome} :: ERROR READING: ${task.loop.arquivo}`);
@@ -162,7 +181,7 @@ export class TaskLoop {
             .then(() => this.deleteFile(loop))
             .then(() => console.log(`[PROCESS FILE2] ${loop.nome} :: FINISHED READ: ${loop.arquivo}`))
             .catch((err) => {
-              console.log(`[PROCESS FILE] ${loop.nome} ERROR:: `, err)
+              console.log(`[PROCESS FILE] ${loop.nome} ERROR:: `, err);
               throw  err;
             });
       });
@@ -208,7 +227,7 @@ export class TaskLoop {
       task.on('onStatus', (s: any) => {
         console.log('Executed OnStatus: ', s);
         this.io.emit('status', s);
-      })
+      });
       task.run();
       tasks.push(task);
    }

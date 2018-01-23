@@ -3,11 +3,13 @@ import UserCtrl from './controllers/user';
 import LoopCtrl from './controllers/loop';
 import LoopService from './service/loop.service';
 import UserService from './service/user.service';
+import {LoggerCtrl} from './controllers/logger';
 
 export default function setRoutes(app) {
 
   const loopCtrl = new LoopCtrl(LoopService());
   const userCtrl = new UserCtrl(UserService());
+  const loggerCtrl = new LoggerCtrl();
 
   // Cats
   app.route('/api/loops').get(loopCtrl.getAll);
@@ -26,4 +28,12 @@ export default function setRoutes(app) {
   app.route('/api/user/:id').put(userCtrl.update);
   app.route('/api/user/:id').delete(userCtrl.delete);
 
+  //
+  app.get('/api/logs', function(req, res) {
+    res.redirect('/logs/1');
+  });
+
+  app.get('/api/logs/:page', loggerCtrl.logs);
+
 }
+
