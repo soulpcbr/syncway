@@ -1,4 +1,3 @@
-import {createReadStream} from 'fs';
 import Loop from '../models/loop';
 
 const FormData = require('form-data');
@@ -48,7 +47,7 @@ export class SyncwayFileUpload {
                   resolve(form);
                } else {
                   console.log('else');
-                  form.append('fileToUpload', createReadStream(loop.arquivo));
+                  form.append('fileToUpload', fs.createReadStream(loop.arquivo));
                   loop.pathname = loop.arquivo;
                   resolve(form);
                }
@@ -69,15 +68,16 @@ export class SyncwayFileUpload {
          dest: D_PATH + pathname,
       });
       loop.pathname = D_PATH + pathname;
-      form.append('fileToUpload', filename);
+      console.log(`[DOWNLOADING FILE WILL UP]  :: ${filename}`)
+      form.append('fileToUpload', fs.createReadStream(filename));
       return form;
    }
 
    static async downloadHttps(options) {
       try {
          console.log(`[DOWNLOADING FILE]  :: ${options.url}` );
-         const { filename, image } = await download.image(options);
-         return filename;
+         const response =  await download.image(options);
+         return response.filename;
       } catch (e) {
          throw e;
       }

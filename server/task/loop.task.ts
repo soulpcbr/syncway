@@ -8,20 +8,12 @@ import {Task, STATUS} from './task';
 import {each} from 'async';
 const fs  = require('fs-extra');
 
-const tasks: Task[] = [];
-
-export default function getTasks() {
-   return tasks;
-}
-
-function push(task: Task) {
-   tasks.push(task);
-}
-
 /**
  * Created by icastilho on 22/05/17.
  */
 export class TaskLoop {
+
+   private tasks: Task[] = [];
 
    io: SocketIO.Server;
    loopService: LoopService;
@@ -33,13 +25,16 @@ export class TaskLoop {
       this.loopService.addListener('loop:delete', (loop) => this.onDelete(loop));
    }
 
-   start() {
+  getTasks(): Task[] {
+    return this.tasks;
+  }
 
+   start() {
       fs.remove(D_PATH)
          .then(() => {
             console.log(`[CLEANING PATH] :: ${D_PATH}`);
          }).catch((err) => {
-            console.error(`[CLEANING PATH] :: ${D_PATH} :: `, err);
+            console.error(`[ERROR CLEANING PATH] :: ${D_PATH} :: `, err);
          });
 
       this.loopService.getAll().then((loops: any[]) => {
@@ -229,12 +224,12 @@ export class TaskLoop {
         this.io.emit('status', s);
       });
       task.run();
-      tasks.push(task);
+      this.tasks.push(task);
    }
 
    onDelete(id: number) {
-      const pos = tasks.map(elem => { return elem.id; }).indexOf(id);
-      tasks.splice(pos, 1);
+      const pos = this.tasks.map(elem => { return elem.id; }).indexOf(id);
+      this.tasks.splice(pos, 1);
    }
 
 }

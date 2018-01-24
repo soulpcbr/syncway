@@ -20,7 +20,7 @@ export class LoopComponent implements OnInit {
    isLoading = true;
    isEditing = false;
 
-   addLoopForm: FormGroup;
+   addLoopForm: FormGroup = null;
    nome = new FormControl('', Validators.required);
    arquivo = new FormControl('', Validators.required);
    delay_main = new FormControl('', Validators.required);
@@ -43,28 +43,41 @@ export class LoopComponent implements OnInit {
    ) { }
 
    ngOnInit() {
-      this.getLoops();
-      this.addLoopForm = this.formBuilder.group({
-         nome: this.nome,
-         arquivo: this.arquivo,
-         delay_main: this.delay_main,
-         delay_extra: this.delay_extra,
-         data: this.data,
-         method: this.method,
-         api: this.api,
-      });
-      this.initIoConnection();
-      this.startCountdown();
+     this.addLoopForm = this.formBuilder.group({
+       nome: this.nome,
+       arquivo: this.arquivo,
+       delay_main: this.delay_main,
+       delay_extra: this.delay_extra,
+       data: this.data,
+       method: this.method,
+       api: this.api,
+     });
+     this.getLoops().then(() => {
+       this.initIoConnection();
+       this.startCountdown();
+       return;
+     }).then(_ => this.isLoading = false);
    }
 
   private initIoConnection(): void {
 
     this.ioConnection = this.socketService.onStatus()
       .subscribe((s: any) => {
+        console.log('status', s);
         const loop = this.loops.find(((value, index, obj) => value.$loki === s.id));
         loop.nextExecution = s.nextExecution;
         loop.status = s.status;
       });
+
+
+    this.socketService.onInit()
+      .subscribe((s: any) => {
+        console.log('onInit', s);
+        const loop = this.loops.find(((value, index, obj) => value.$loki === s.id));
+        loop.nextExecution = s.nextExecution;
+        loop.status = s.status;
+      });
+
 
     this.socketService.onEvent('connect')
       .subscribe(() => {
@@ -91,15 +104,17 @@ export class LoopComponent implements OnInit {
     });
   }
 
-   getLoops() {
-      this.loopService.getLoops().subscribe(
+   getLoops(): Promise<any> {
+     return new Promise( ( resolve, rejected ) => {
+       this.loopService.getLoops().subscribe(
          data => this.loops = data.map(l => {
            l.status = STATUS[STATUS.CONECTING];
            return l;
          }),
-         error => console.log(error),
-         () => this.isLoading = false
-      );
+         error => rejected(error),
+         () => resolve(),
+       );
+     });
    }
 
    addLoop() {

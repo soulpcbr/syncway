@@ -18,6 +18,14 @@ export class SocketService {
     });
   }
 
+  public onInit(): Observable<any> {
+    return new Observable<any>(observer => {
+      this.socket.on('oninit', (data: any) => observer.next(data));
+    });
+  }
+
+
+
   public onEvent(event: string): Observable<any> {
     return new Observable<Event>(observer => {
       this.socket.on(event, () => observer.next());

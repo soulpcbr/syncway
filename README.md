@@ -39,6 +39,13 @@ A window will automatically open at [localhost:4200](http://localhost:4200). Ang
 
 ***At first tim you must execute as dev bundle to can create admin user***
  
+## Create package
+ `npm i`: install all dependencies
+ `npm run prod`: compile angular files
+ `del node_modules`: remove all dev dependencies
+ `npm i --production`: install only production dependencies
+ `npm zip` create package
+ 
 ## Deploy
 1. Extract file `bin/Syncway.zip`
 2. go to extracted folder 

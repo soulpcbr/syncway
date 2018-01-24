@@ -8,6 +8,7 @@
   "scripts": {
     "ng": "ng",
     "build": "ng build",
+    "zip": "bestzip Syncway.zip node_modules/ dist/* bin/*",
     "start": "node dist/server/app.js",
     "predev": "tsc -p server",
     "dev": "concurrently \"ng serve -pc proxy.conf.json --open\" \"tsc -w -p server\" \"nodemon dist/server/app.js\"",
@@ -80,7 +81,7 @@
     "@angular/cli": "^1.6.1",
     "@angular/compiler-cli": "^5.2.1",
     "@types/jasmine": "2.5.38",
-    "@types/node": "^6.0.92",
+    "@types/node": "^6.0.96",
     "codelyzer": "~2.0.0",
     "concurrently": "^3.5.1",
     "jasmine-core": "~2.5.2",

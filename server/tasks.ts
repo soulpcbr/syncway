@@ -1,4 +1,5 @@
 import {TaskLoop} from './task/loop.task';
+import {STATUS} from './task/task';
 
 /**
  * Created by icastilho on 22/05/17.
@@ -6,13 +7,14 @@ import {TaskLoop} from './task/loop.task';
 
 export default function setTasks(io) {
 
-  const nsp = io.of('/status');
+  // const nsp = io.of('/status');
+  const task = new TaskLoop(io);
 
-  nsp.on('connect', (socket: any) => {
-    console.log('Connected client on port %s.');
-    socket.on('status', (s: any) => {
-      console.log('[loop](status): %s', JSON.stringify(s));
-      nsp.emit('status', s);
+  io.on('connect', (socket: any) => {
+    console.log('Connected client on port ');
+
+    task.getTasks().forEach(t => {
+      io.emit('status'  , {id: t.loop.$loki, status: 'CONNECTING', nextExecution: t.getDelay() + new Date().getTime() });
     });
 
     socket.on('disconnect', () => {
@@ -21,7 +23,6 @@ export default function setTasks(io) {
   });
 
   setTimeout(() => {
-      const task = new TaskLoop(io);
       task.start();
    }, 3000);
 

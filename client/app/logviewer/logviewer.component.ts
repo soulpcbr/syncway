@@ -20,6 +20,7 @@ export class LogviewerComponent implements OnInit {
     const now = new Date();
     const from = new Date();
     from.setHours(now.getHours() - 1);
+    now.setHours(now.getHours() + 1);
     this.range = [from, now];
     this.load();
   }
@@ -36,5 +37,11 @@ export class LogviewerComponent implements OnInit {
 
   doFilter() {
     this.load();
+  }
+
+  keyDownFunction(event) {
+    if (event.keyCode === 13) {
+      this.load();
+    }
   }
 }

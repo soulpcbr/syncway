@@ -43,7 +43,7 @@ export class Task extends EventEmitter {
    }
 
    setStatus = (status: STATUS) => {
-     console.log(`[STATUS CHANGE] :: Name:${this.name} - status: ${ STATUS[this.status]}`);
+     // console.log(`[STATUS CHANGE] :: Name:${this.name} - status: ${ STATUS[this.status]}`);
      this.status = status;
      this.emit('onStatus', {id: this.loop.$loki, status: STATUS[status], nextExecution:  this.getDelay() + new Date().getTime() });
    }
@@ -56,10 +56,26 @@ export class Task extends EventEmitter {
       return this.delay;
    }
 
+/*
+   scheduleNextExecution() {
+      this.nextExecutionTime = this.getDelay() + new Date().getTime();
+      return this.getDelay();
+   }
+*/
+
    setExecution(execution: any) {
       this.execution = execution;
    }
 
+/*
+   getNextExecutionTime = () => {
+     return this.nextExecutionTime;
+   }
+*/
+
+   getStatus() {
+     return this.status;
+   }
 }
 
 export enum STATUS {

@@ -1,31 +1,33 @@
 <div class="card">
   <div class="card">
-    <table class="table table-bordered table-striped">
-      <tbody>
-      <tr>
-        <td class="text-left">
-          <label>
-          Date Time Range:
-          <input [owlDateTimeTrigger]="dt" [owlDateTime]="dt" [(ngModel)]="range" size="40"
-                 [selectMode]="'range'">
+    <form (keydown)="keyDownFunction($event)">
+      <table class="table table-bordered table-striped">
+        <tbody>
+        <tr>
+          <td class="text-left">
+            <label>
+            Date Time Range:
+            <input [owlDateTimeTrigger]="dt" [owlDateTime]="dt" [(ngModel)]="range" size="40" name="range"
+                   [selectMode]="'range'">
 
-          <span class="trigger" [owlDateTimeTrigger]="dt">
-            <i class="fas fa-calendar-alt"></i>
-          </span>
-          <owl-date-time #dt></owl-date-time>
-          </label>
-        <td>
-          <label>
-            Max Result
-            <input [(ngModel)]="limit" >
-          </label>
-        </td>
-        <td>
-          <button class="btn btn-primary" type="button" (click)="doFilter()">Filter</button>
-        </td>
-      </tr>
-      </tbody>
-    </table>
+            <span class="trigger" [owlDateTimeTrigger]="dt">
+              <i class="fas fa-calendar-alt"></i>
+            </span>
+            <owl-date-time #dt></owl-date-time>
+            </label>
+          <td>
+            <label>
+              Max Result
+              <input [(ngModel)]="limit" name="limit" >
+            </label>
+          </td>
+          <td>
+            <button class="btn btn-primary" type="button" (click)="doFilter()">Filter</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </form>
   </div>
   <div class="card-block">
 
