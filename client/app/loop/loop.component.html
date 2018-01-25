@@ -8,8 +8,9 @@
     <table class="table table-bordered table-striped" >
       <thead class="thead-default">
         <tr >
-          <th class="col-lg-3">nome</th>
-          <th class="col-lg-6">Arquivo</th>
+          <th class="col-lg-5">Name</th>
+          <th class="col-lg-2">Status</th>
+          <th class="col-lg-2">Next</th>
           <th class="col-lg-3">Actions</th>
         </tr>
       </thead>
@@ -20,8 +21,20 @@
       </tbody>
       <tbody >
         <tr *ngFor="let loop of loops">
-          <td class="col-lg-3">{{loop.nome}}</td>
-          <td class="col-lg-6">{{loop.arquivo}}</td>
+          <td class="col-lg-5 text-truncate">{{loop.nome}}</td>
+          <td class="col-lg-2">
+            <button class="btn btn-sm" (click)="enableEditing(loop)"
+                    [ngClass]="{'btn-primary': loop.status===STATUSSLEEPING,
+                     'btn-danger': loop.status===STATUSERROR,
+                     'btn-success': loop.status===STATUSRUNNING,
+                     'btn-warning': loop.status===STATUSCONECTING}"
+            >
+              {{loop.status || STATUSCONECTING}}
+            </button>
+          </td>
+          <td class="col-lg-2 text-right">
+            {{ loop.status === STATUSSLEEPING || loop.status ===  STATUSERROR ? loop.timer : 0}}
+          </td>
           <td class="col-lg-3">
             <button class="btn btn-sm btn-warning" (click)="enableEditing(loop)"><i class="fa fa-pencil"></i> Edit</button> <button class="btn btn-sm btn-danger" (click)="deleteLoop(loop)"><i class="fa fa-trash"></i> Delete</button>
           </td>
@@ -35,10 +48,10 @@
     <form class="left " #form="ngForm" (ngSubmit)="editLoop(loop)" style="text-align:center">
       <div class="card-block">
         <div class="form-group">
-          <input class="form-control" type="text" name="nome" [(ngModel)]="loop.nome" placeholder="Nome" required>
+          <input class="form-control" type="text" name="nome" [(ngModel)]="loop.nome" placeholder="Name" required>
         </div>
         <div class="form-group">
-          <input class="form-control" type="text" name="arquivo" [(ngModel)]="loop.arquivo" placeholder="Arquivo" required>
+          <input class="form-control" type="text" name="arquivo" [(ngModel)]="loop.arquivo" placeholder="File" required>
         </div>
         <div class="form-group">
           <input class="form-control" type="number" name="delay_main" [(ngModel)]="loop.delay_main" placeholder="Delay Main" min="0" >
@@ -70,10 +83,10 @@
   <form class="left " [formGroup]="addLoopForm" (ngSubmit)="addLoop()" style="text-align:center">
     <div class="card-block">
       <div class="form-group">
-        <input class="form-control" type="text" name="nome" formControlName="nome" placeholder="Nome" required>
+        <input class="form-control" type="text" name="nome" formControlName="nome" placeholder="Name" required>
       </div>
       <div class="form-group">
-        <input class="form-control" type="text" name="arquivo" formControlName="arquivo" placeholder="Arquivo" required>
+        <input class="form-control" type="text" name="arquivo" formControlName="arquivo" placeholder="File" required>
       </div>
       <div class="form-group">
         <input class="form-control" type="number" name="delay_main" formControlName="delay_main" placeholder="Delay Main" min="0" >

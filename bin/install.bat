@@ -8,8 +8,9 @@ SET SERVICENAME=%"%Syncway%"%
 
 
 :install
-ECHO Installing service "%SERVICENAME%"
+ECHO Installing service "%SERVICENAME%" PATH "%PATH%"
 cd "%PATH%"
+start node_modules\@ffmpeg-installer\win32-x64\ffmpeg -i "rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov" -vf fps=1 -t 1 test.png
 nssm install %SERVICENAME% %PATH%%SERVICE_EXE%
 nssm set %SERVICENAME% AppEnvironmentExtra SECRET_TOKEN=syncthewayitgone
 cd "%CURRENT_DIR%"

@@ -1,0 +1,43 @@
+<div class="card">
+  <div class="card">
+    <form (keydown)="keyDownFunction($event)">
+      <table class="table table-bordered table-striped">
+        <tbody>
+        <tr>
+          <td class="text-left">
+            <label>
+            Date Time Range:
+            <input [owlDateTimeTrigger]="dt" [owlDateTime]="dt" [(ngModel)]="range" size="40" name="range"
+                   [selectMode]="'range'">
+
+            <span class="trigger" [owlDateTimeTrigger]="dt">
+              <i class="fas fa-calendar-alt"></i>
+            </span>
+            <owl-date-time #dt></owl-date-time>
+            </label>
+          <td>
+            <label>
+              Max Result
+              <input [(ngModel)]="limit" name="limit" >
+            </label>
+          </td>
+          <td>
+            <button class="btn btn-primary" type="button" (click)="doFilter()">Filter</button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <div class="card-block">
+
+    <p *ngFor="let line of lines" [ngClass]="{
+    'alert-danger': line.level==='error',
+
+    'alert-warning': line.level==='warn'
+    }">
+      {{ line.timestamp | date: 'dd/MM/yyyy hh:mm:ss'}} - {{line.level}}: {{line.message}}
+    </p>
+
+  </div>
+</div>

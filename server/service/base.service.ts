@@ -56,7 +56,7 @@ abstract class BaseService<T extends Model> {
     * @param req
     * @param res
     */
-   getAll = (): Promise<T> => {
+   getAll = (): Promise<T[]> => {
       return Promise.resolve(this.coll.data);
    }
 

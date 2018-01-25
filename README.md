@@ -1,4 +1,4 @@
- # Syncway v1.0.5
+ # Syncway v1.0.6
 
 
 The frontend is generated with [Angular CLI](https://github.com/angular/angular-cli). The backend is made from scratch. Whole stack in [TypeScript](https://www.typescriptlang.org).
@@ -38,6 +38,13 @@ A window will automatically open at [localhost:4200](http://localhost:4200). Ang
 `node dist/server/app.js run the project listening at [localhost:3000](http://localhost:3000)
 
 ***At first tim you must execute as dev bundle to can create admin user***
+ 
+## Create package
+ `npm i`: install all dependencies
+ `npm run prod`: compile angular files
+ `del node_modules`: remove all dev dependencies
+ `npm i --production`: install only production dependencies
+ `npm zip` create package
  
 ## Deploy
 1. Extract file `bin/Syncway.zip`
