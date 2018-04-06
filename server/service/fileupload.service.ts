@@ -18,7 +18,7 @@ export class SyncwayFileUpload {
 
   static async upload(loop: Loop) {
     console.log(`[FILE UPLOAD] ${loop.nome} :: ${loop.arquivo}` );
-    await this.createForm(loop)
+    return await this.createForm(loop)
       .then((form: FormData) => this.submitFile(form, loop))
       .catch((err) => {
         console.error(`[FILE UPLOAD] ${loop.nome} UNESPECTED ERROR:: `, err.message);
@@ -125,6 +125,7 @@ export class SyncwayFileUpload {
             port: params.port,
             path: params.pathname,
             host: params.hostname,
+            protocol: params.protocol,
             method: loop.method.toLowerCase(),
          }, function(err, res) {
             if (err) {
@@ -143,6 +144,7 @@ export class SyncwayFileUpload {
                   try {
                      console.log(`[FILE UPLOAD] ${loop.nome} Response::`, rawData);
                      const parsedData = JSON.parse(rawData);
+                     console.log(`[FILE UPLOAD] ${loop.nome} NEW DELAY::`, parsedData.delay);
                      resolve(parsedData.delay);
                   } catch (e) {
                      console.error(`[FILE UPLOAD] ${loop.nome} ERROR:: `, e);
