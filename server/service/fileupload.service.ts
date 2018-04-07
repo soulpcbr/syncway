@@ -121,6 +121,7 @@ export class SyncwayFileUpload {
    static submitFile(form, loop: Loop) {
       return new Promise((resolve, reject) => {
          const params = parseUrl(loop.api);
+         console.log('submitFile:', params)
          form.submit({
             port: params.port,
             path: params.pathname,

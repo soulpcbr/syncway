@@ -44,7 +44,7 @@ A window will automatically open at [localhost:4200](http://localhost:4200). Ang
  `npm run prod`: compile angular files
  `del node_modules`: remove all dev dependencies
  `npm i --production`: install only production dependencies
- `npm zip` create package
+ `npm run zip` create package
  
 ## Deploy
 1. Extract file `bin/Syncway.zip`
